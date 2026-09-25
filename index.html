@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Leitor de Cartão-Resposta</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:980px;margin:0 auto;padding:16px}.card{background:white;border:1px solid #d8dee9;border-radius:16px;padding:16px;margin-bottom:14px}.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}h1{font-size:22px;margin:0}.muted{color:#5e6878;font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:720px){.grid{grid-template-columns:1fr}}label{font-weight:600;font-size:14px}select,input,button{font:inherit}select,input{width:100%;padding:11px;border:1px solid #cfd6e2;border-radius:10px;background:white}button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}.primary{background:#0b66ff;color:white}.secondary{background:#eaf1ff;color:#0b4db8}.danger{background:#fff1f1;color:#9a1d1d}.actions{display:flex;gap:10px;flex-wrap:wrap}.cameraBox{position:relative;width:100%;aspect-ratio:3/4;background:#111;border-radius:16px;overflow:hidden}.cameraBox video,.cameraBox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.guide{position:absolute;left:8%;right:8%;top:23%;bottom:13%;border:3px solid rgba(0,255,115,.95);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.26);pointer-events:none}.guide:before{content:'Enquadre somente o CARTÃO-RESPOSTA dentro desta moldura';position:absolute;left:0;right:0;top:-34px;color:white;font-weight:700;text-align:center;font-size:13px;text-shadow:0 1px 2px #000}.status{padding:10px 12px;border-radius:10px;background:#f0f4f9;font-size:14px}.ok{background:#edf9f0;color:#145c2c}.warn{background:#fff7e8;color:#7a4b00}.error{background:#fff0f0;color:#8c1d1d}.results{overflow:auto}.results table{width:100%;border-collapse:collapse;min-width:680px}.results th,.results td{padding:8px;border-bottom:1px solid #e4e8ef;text-align:center}.results th:first-child,.results td:first-child{text-align:left}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#edf2f7;font-size:12px}.answerGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.answerGrid div{padding:8px;border:1px solid #e2e7ef;border-radius:8px;text-align:center;font-size:13px}.small{font-size:12px}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card top">
+    <div><h1>Leitor de Cartão-Resposta</h1><div class="muted">Versão 2 • leitura do cartão inteiro • 30 questões A/B/C/D</div></div>
+    <span class="pill">8º ano • Arte Visuais</span>
+  </div>
+
+  <div class="card grid">
+    <div><label>Aluno</label><input id="student" placeholder="Digite ou selecione o nome do aluno"></div>
+    <div><label>Turma</label><input id="className" value="8º A"></div>
+    <div><label>Gabarito</label><select id="keyPreset"><option value="8visual">8º ano — Arte Visuais</option></select></div>
+    <div><label>Modo de leitura</label><select id="mode"><option value="camera">Câmera</option><option value="file">Foto do aparelho</option></select></div>
+  </div>
+
+  <div class="card">
+    <div id="status" class="status">Toque em <b>Abrir câmera</b> e enquadre o cartão-resposta na moldura verde.</div>
+    <div style="height:10px"></div>
+    <div class="cameraBox" id="cameraBox">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas" class="hidden"></canvas>
+      <div class="guide" id="guide"></div>
+    </div>
+    <input id="fileInput" class="hidden" type="file" accept="image/*" capture="environment">
+    <div style="height:12px"></div>
+    <div class="actions">
+      <button id="openCamera" class="primary">Abrir câmera</button>
+      <button id="capture" class="secondary" disabled>Ler cartão</button>
+      <button id="choosePhoto" class="secondary">Escolher foto</button>
+      <button id="retry" class="danger hidden">Nova leitura</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="readingCard">
+    <div class="top"><b>Respostas detectadas</b><span class="muted">Toque numa alternativa para corrigir manualmente.</span></div>
+    <div style="height:10px"></div>
+    <div id="answers" class="answerGrid"></div>
+  </div>
+
+  <div class="card hidden" id="scoreCard">
+    <b>Resultado</b>
+    <div style="height:10px"></div>
+    <div class="results"><table>
+      <thead><tr><th>Disciplina</th><th>Questões</th><th>Acertos</th><th>Nota</th></tr></thead>
+      <tbody id="scoreBody"></tbody>
+    </table></div>
+    <div style="height:12px"></div>
+    <div class="actions"><button id="save" class="primary">Adicionar ao quadro</button></div>
+  </div>
+
+  <div class="card">
+    <div class="top"><b>Quadro da turma</b><button id="exportCsv" class="secondary">Exportar CSV</button></div>
+    <div style="height:10px"></div>
+    <div class="results"><table>
+      <thead><tr><th>Aluno</th><th>EF acertos</th><th>EF nota</th><th>Ing. acertos</th><th>Ing. nota</th><th>Port. acertos</th><th>Port. nota</th><th>Arte acertos</th><th>Arte nota</th></tr></thead>
+      <tbody id="classBody"><tr><td colspan="9" class="muted">Nenhum aluno corrigido ainda.</td></tr></tbody>
+    </table></div>
+  </div>
+
+  <div class="card small muted">
+    <b>Como funciona esta primeira versão:</b> o cartão deve ser alinhado dentro da moldura verde. O leitor mede o preenchimento das quatro bolhas em cada questão. Se a diferença entre a mais escura e a segunda mais escura for pequena, a questão é marcada para conferência manual.
+  </div>
+</div>
+
+<script>
+const key8Visual = ['C','A','D','B','B','C','D','A','B','C','C','A','C','D','D','D','A','C','B','B','D','D','A','A','B','A','D','B','D','D'];
+const key = key8Visual;
+const state = {stream:null, answers:Array(30).fill('?'), uncertain:new Set(), rows:[]};
+const $ = id => document.getElementById(id);
+const statusEl=$('status'), video=$('video'), canvas=$('canvas'), guide=$('guide');
+function setStatus(msg,type=''){statusEl.className='status '+type;statusEl.innerHTML=msg}
+
+$('mode').addEventListener('change',()=>{ const cam=$('mode').value==='camera'; $('openCamera').style.display=cam?'inline-block':'none'; $('capture').style.display=cam?'inline-block':'none'; $('choosePhoto').style.display=cam?'inline-block':'inline-block'; });
+
+$('openCamera').addEventListener('click', async()=>{
+  try{
+    if(state.stream) state.stream.getTracks().forEach(t=>t.stop());
+    state.stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:2560}},audio:false});
+    video.srcObject=state.stream; $('capture').disabled=false; setStatus('Câmera aberta. Alinhe <b>somente o quadro do cartão-resposta</b> dentro da moldura verde.','ok');
+  }catch(e){ setStatus('Não foi possível abrir a câmera. Em iPhone, use Safari/Chrome em uma página HTTPS e permita acesso à câmera. Você também pode tocar em <b>Escolher foto</b>.','error'); }
+});
+
+$('choosePhoto').addEventListener('click',()=> $('fileInput').click());
+$('fileInput').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; const img=await loadImageFile(f); drawImageToCanvas(img); processWholePhoto(); });
+$('capture').addEventListener('click',()=>{ if(!video.videoWidth){setStatus('A câmera ainda não está pronta.','warn');return;} captureGuideRegion(); processWholePhoto(); });
+$('retry').addEventListener('click',()=>{canvas.classList.add('hidden');video.classList.remove('hidden');guide.classList.remove('hidden');$('retry').classList.add('hidden');$('readingCard').classList.add('hidden');$('scoreCard').classList.add('hidden');setStatus('Faça uma nova leitura.','');});
+
+function loadImageFile(file){return new Promise((resolve,reject)=>{const u=URL.createObjectURL(file),img=new Image();img.onload=()=>{URL.revokeObjectURL(u);resolve(img)};img.onerror=reject;img.src=u})}
+function drawImageToCanvas(img){
+  const w=900,h=Math.round(w*img.height/img.width);canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);canvas.classList.remove('hidden');video.classList.add('hidden');guide.classList.add('hidden');$('retry').classList.remove('hidden');
+}
+function captureGuideRegion(){
+  const rect=$('cameraBox').getBoundingClientRect(); const gx=.08, gy=.23, gw=.84, gh=.64;
+  const sx=video.videoWidth*gx, sy=video.videoHeight*gy, sw=video.videoWidth*gw, sh=video.videoHeight*gh;
+  canvas.width=1000;canvas.height=Math.round(1000*sh/sw);canvas.getContext('2d').drawImage(video,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
+  canvas.classList.remove('hidden');video.classList.add('hidden');guide.classList.add('hidden');$('retry').classList.remove('hidden');
+}
+
+// Leitura automática do cartão inteiro. Primeiro procura a tinta azul/roxa das marcações.
+// Isso permite trabalhar com a foto inteira, sem exigir recorte manual. Se a tinta colorida
+// não for encontrada com segurança, cai no leitor geométrico e pede conferência.
+function processWholePhoto(){
+  const auto=detectColoredMarks();
+  if(auto && auto.answers.length===30){
+    state.answers=auto.answers; state.uncertain=new Set(auto.uncertain);
+    renderAnswers();renderScores();$('readingCard').classList.remove('hidden');$('scoreCard').classList.remove('hidden');
+    setStatus(`Cartão inteiro reconhecido: <b>30/30 respostas</b>. ${state.uncertain.size?'<b>'+state.uncertain.size+'</b> questão(ões) para conferir.':'Pronto para conferir e salvar.'}`,'ok');
+    return;
+  }
+  setStatus('Não consegui localizar automaticamente as 30 marcações coloridas. Vou tentar a leitura por posição; confira as questões destacadas.','warn');
+  processCard();
+}
+function detectColoredMarks(){
+  const ctx=canvas.getContext('2d'), w=canvas.width,h=canvas.height, im=ctx.getImageData(0,0,w,h), d=im.data;
+  // máscara de pixels com tinta azul/roxa: azul dominante e saturação suficiente
+  const mask=new Uint8Array(w*h);
+  for(let i=0,p=0;i<d.length;i+=4,p++){
+    const r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+    const sat=mx-mn;
+    if(sat>28 && b>r*1.03 && b>g*1.03 && mx<205) mask[p]=1;
+  }
+  // componentes conexos, reduzidos para desempenho
+  const seen=new Uint8Array(w*h), comps=[], stack=[];
+  const minA=Math.max(35,Math.floor(w*h*0.00010)), maxA=Math.floor(w*h*0.004);
+  for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){let p=y*w+x;if(!mask[p]||seen[p])continue;
+    let area=0,sx=0,sy=0,minx=x,maxx=x,miny=y,maxy=y;stack.push(p);seen[p]=1;
+    while(stack.length){const q=stack.pop(),qy=Math.floor(q/w),qx=q-qy*w;area++;sx+=qx;sy+=qy;minx=Math.min(minx,qx);maxx=Math.max(maxx,qx);miny=Math.min(miny,qy);maxy=Math.max(maxy,qy);
+      for(const [dx,dy] of [[2,0],[-2,0],[0,2],[0,-2]]){const nx=qx+dx,ny=qy+dy;if(nx>=0&&nx<w&&ny>=0&&ny<h){const np=ny*w+nx;if(mask[np]&&!seen[np]){seen[np]=1;stack.push(np)}}}
+    }
+    area*=4; if(area>=minA&&area<=maxA&&(maxx-minx)>8&&(maxy-miny)>8) comps.push({x:sx/(area/4),y:sy/(area/4),area});
+  }
+  if(comps.length<25)return null;
+  // Mantém região central onde está o cartão e agrupa 15 linhas por cada metade.
+  let pts=comps.filter(c=>c.y>h*.20&&c.y<h*.86&&c.x>w*.10&&c.x<w*.90);
+  if(pts.length<25)return null;
+  const mid=w*.5,left=pts.filter(c=>c.x<mid),right=pts.filter(c=>c.x>=mid);
+  function rows(side){side.sort((a,b)=>a.y-b.y); const groups=[]; for(const p of side){let g=groups.find(z=>Math.abs(z.y-p.y)<h*.018);if(!g){g={y:p.y,pts:[]};groups.push(g)}g.pts.push(p);g.y=g.pts.reduce((s,q)=>s+q.y,0)/g.pts.length}return groups.filter(g=>g.pts.length).sort((a,b)=>a.y-b.y).slice(0,15)}
+  const L=rows(left),R=rows(right); if(L.length!==15||R.length!==15)return null;
+  function decode(groups,isRight){
+    const all=groups.flatMap(g=>g.pts), xs=all.map(p=>p.x).sort((a,b)=>a-b);
+    // estimate four printed answer-column centers from marked points by k-means in x
+    let centers=isRight?[.60,.68,.76,.84]:[.18,.25,.32,.39]; centers=centers.map(v=>v*w);
+    for(let it=0;it<12;it++){const buckets=centers.map(()=>[]);for(const p of all){let k=0,bd=1e9;centers.forEach((c,i)=>{const z=Math.abs(p.x-c);if(z<bd){bd=z;k=i}});buckets[k].push(p.x)}centers=centers.map((c,i)=>buckets[i].length?buckets[i].reduce((a,b)=>a+b,0)/buckets[i].length:c).sort((a,b)=>a-b)}
+    const letters='ABCD',ans=[],unc=[];
+    groups.forEach((g,ri)=>{let p=g.pts.sort((a,b)=>b.area-a.area)[0];let k=0,bd=1e9;centers.forEach((c,i)=>{let z=Math.abs(p.x-c);if(z<bd){bd=z;k=i}});ans.push(letters[k]);if(g.pts.length>1||bd>w*.035)unc.push(ri)});return {ans,unc};
+  }
+  const a=decode(L,false),b=decode(R,true);return {answers:[...a.ans,...b.ans],uncertain:[...a.unc,...b.unc.map(i=>i+15)]};
+}
+
+// Geometry calibrated for the standard 30-question sheet: two 15-row blocks, A-D across each row.
+// Because the user aligns the response card inside the guide, coordinates can be normalized.
+function bubbleCenters(w,h){
+  const out=[];
+  const top=.075, bottom=.92; const rowStep=(bottom-top)/14;
+  const leftCols=[.105,.205,.305,.405];
+  const rightCols=[.625,.725,.825,.925];
+  for(let r=0;r<15;r++){ const y=(top+r*rowStep)*h; out.push(leftCols.map(x=>[x*w,y])); }
+  for(let r=0;r<15;r++){ const y=(top+r*rowStep)*h; out.push(rightCols.map(x=>[x*w,y])); }
+  return out;
+}
+function meanDarkness(imgData,w,h,cx,cy,r){
+  let sum=0,n=0; const data=imgData.data;
+  const x0=Math.max(0,Math.floor(cx-r)),x1=Math.min(w-1,Math.ceil(cx+r)),y0=Math.max(0,Math.floor(cy-r)),y1=Math.min(h-1,Math.ceil(cy+r));
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const dx=x-cx,dy=y-cy;if(dx*dx+dy*dy>r*r)continue;const i=(y*w+x)*4;const lum=.299*data[i]+.587*data[i+1]+.114*data[i+2];sum+=255-lum;n++;}
+  return n?sum/n:0;
+}
+function processCard(){
+  const ctx=canvas.getContext('2d'); const w=canvas.width,h=canvas.height; const img=ctx.getImageData(0,0,w,h); const centers=bubbleCenters(w,h); const radius=Math.max(8,Math.min(w,h)*.022);
+  state.uncertain.clear(); const letters=['A','B','C','D'];
+  state.answers=centers.map((row,idx)=>{
+    const vals=row.map(([x,y])=>meanDarkness(img,w,h,x,y,radius));
+    const order=vals.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v); const best=order[0],second=order[1];
+    const weak=best.v<38; const close=(best.v-second.v)<12;
+    if(weak||close){state.uncertain.add(idx);}
+    return letters[best.i];
+  });
+  renderAnswers(); renderScores(); $('readingCard').classList.remove('hidden'); $('scoreCard').classList.remove('hidden');
+  setStatus(state.uncertain.size?`Leitura concluída. <b>${state.uncertain.size}</b> questão(ões) precisam de conferência.`:'Leitura concluída sem marcações duvidosas.','ok');
+}
+function renderAnswers(){
+  const box=$('answers'); box.innerHTML='';
+  state.answers.forEach((a,i)=>{const d=document.createElement('div');d.style.background=state.uncertain.has(i)?'#fff7e8':'white';d.innerHTML=`<b>${i+1}</b> — <button type="button" data-i="${i}" style="padding:4px 9px;border-radius:8px;border:1px solid #cfd6e2;background:white">${a}</button>${state.uncertain.has(i)?'<div class="small" style="color:#7a4b00">conferir</div>':''}`;box.appendChild(d)});
+  box.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{const i=+btn.dataset.i;const seq=['A','B','C','D'];state.answers[i]=seq[(seq.indexOf(state.answers[i])+1)%4];state.uncertain.delete(i);renderAnswers();renderScores();}));
+}
+function scoreRange(start,end){let c=0;for(let i=start-1;i<=end-1;i++)if(state.answers[i]===key[i])c++;return c}
+function getScores(){
+  const ef=scoreRange(1,5),ing=scoreRange(6,10),port=scoreRange(11,25),arte=scoreRange(26,30);
+  return {ef,ing,port,arte,efn:ef*2,ingn:ing*2,portn:port/15*10,arten:arte*2};
+}
+function renderScores(){const s=getScores();$('scoreBody').innerHTML=`<tr><td>Educação Física</td><td>1–5</td><td>${s.ef}/5</td><td>${fmt(s.efn)}</td></tr><tr><td>Língua Inglesa</td><td>6–10</td><td>${s.ing}/5</td><td>${fmt(s.ingn)}</td></tr><tr><td>Língua Portuguesa</td><td>11–25</td><td>${s.port}/15</td><td>${fmt(s.portn)}</td></tr><tr><td>Arte</td><td>26–30</td><td>${s.arte}/5</td><td>${fmt(s.arten)}</td></tr>`}
+function fmt(n){return n.toFixed(2).replace('.',',').replace(/,00$/,',0')}
+$('save').addEventListener('click',()=>{const student=$('student').value.trim();if(!student){setStatus('Digite o nome do aluno antes de adicionar ao quadro.','warn');$('student').focus();return;}const s=getScores();state.rows.push({student,className:$('className').value.trim(),...s});renderClassTable();setStatus(`Resultado de <b>${student}</b> adicionado ao quadro.`,'ok');});
+function renderClassTable(){const b=$('classBody');b.innerHTML='';state.rows.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${escapeHtml(r.student)}</td><td>${r.ef}</td><td>${fmt(r.efn)}</td><td>${r.ing}</td><td>${fmt(r.ingn)}</td><td>${r.port}</td><td>${fmt(r.portn)}</td><td>${r.arte}</td><td>${fmt(r.arten)}</td>`;b.appendChild(tr)})}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+$('exportCsv').addEventListener('click',()=>{if(!state.rows.length){setStatus('Ainda não há resultados para exportar.','warn');return;}const head=['Aluno','Turma','EF acertos','EF nota','Ingles acertos','Ingles nota','Portugues acertos','Portugues nota','Arte acertos','Arte nota'];const lines=[head.join(';'),...state.rows.map(r=>[r.student,r.className,r.ef,r.efn.toFixed(2),r.ing,r.ingn.toFixed(2),r.port,r.portn.toFixed(2),r.arte,r.arten.toFixed(2)].map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';'))];const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='quadro_notas.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
+</script>
+</body>
+</html>
