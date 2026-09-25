@@ -195,4 +195,80 @@ function render(a){$('answers').innerHTML=a.map((v,i)=>`<div class="ans">${i+1}<
 })();
 </script>
 
+
+<!-- ETAPA 8: painel isolado de resultados + exportacao CSV. -->
+<section id="resultsPanel8" style="margin:18px 0;padding:18px;border:1px solid #d9dee8;border-radius:16px;background:#fff">
+  <button id="toggleResults8" type="button" style="width:100%;padding:15px;border:0;border-radius:12px;background:#eef4ff;color:#1459b8;font-weight:800;font-size:17px">Ver resultados da turma</button>
+  <div id="resultsBody8" style="display:none;margin-top:14px">
+    <div id="summary8" style="font-weight:800;font-size:18px;margin-bottom:10px"></div>
+    <input id="filterResults8" type="search" autocomplete="off" placeholder="Buscar aluno nos resultados" style="box-sizing:border-box;width:100%;padding:12px;border:1px solid #cfd6e2;border-radius:10px;font-size:16px;margin-bottom:10px">
+    <div id="resultsList8"></div>
+    <button id="downloadCsv8" type="button" style="width:100%;margin-top:12px;padding:14px;border:0;border-radius:12px;background:#1769e0;color:#fff;font-weight:800;font-size:16px">Baixar resultados (CSV)</button>
+    <div id="csvMsg8" style="margin-top:8px;font-weight:650"></div>
+  </div>
+</section>
+<script>
+(function(){
+ const STORE8='leitor8A_resultados_etapa4b';
+ const toggle8=document.getElementById('toggleResults8');
+ const body8=document.getElementById('resultsBody8');
+ const summary8=document.getElementById('summary8');
+ const filter8=document.getElementById('filterResults8');
+ const list8=document.getElementById('resultsList8');
+ const csv8=document.getElementById('downloadCsv8');
+ const msg8=document.getElementById('csvMsg8');
+
+ function rows8(){try{return JSON.parse(localStorage.getItem(STORE8)||'[]')}catch(e){return[]}}
+ function esc8(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function correctedName8(r){
+   const idx=(Number(r.no)||0)-1;
+   return (idx>=0 && idx<roster8A.length) ? roster8A[idx] : r.aluno;
+ }
+ function render8(){
+   const rows=rows8().sort((a,b)=>a.no-b.no);
+   const q=(filter8.value||'').trim().toUpperCase();
+   summary8.textContent=`${rows.length} de ${roster8A.length} alunos corrigidos • ${roster8A.length-rows.length} faltando`;
+   const show=rows.filter(r=>!q || correctedName8(r).toUpperCase().includes(q));
+   if(!show.length){
+     list8.innerHTML='<div style="padding:14px;background:#f5f7fa;border-radius:10px">Nenhum resultado encontrado.</div>';
+     return;
+   }
+   list8.innerHTML=show.map(r=>`
+    <div style="padding:13px 0;border-bottom:1px solid #e7eaf0">
+      <div style="font-weight:800;margin-bottom:8px">${r.no}. ${esc8(correctedName8(r))}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:14px">
+       <div style="padding:8px;background:#f7f9fc;border-radius:8px"><b>Ed. Física</b><br>${r.ef.acertos}/${r.ef.total} • Nota ${r.ef.nota}</div>
+       <div style="padding:8px;background:#f7f9fc;border-radius:8px"><b>Inglês</b><br>${r.ingles.acertos}/${r.ingles.total} • Nota ${r.ingles.nota}</div>
+       <div style="padding:8px;background:#f7f9fc;border-radius:8px"><b>Português</b><br>${r.portugues.acertos}/${r.portugues.total} • Nota ${r.portugues.nota}</div>
+       <div style="padding:8px;background:#f7f9fc;border-radius:8px"><b>Arte</b><br>${r.arte.acertos}/${r.arte.total} • Nota ${r.arte.nota}</div>
+      </div>
+    </div>`).join('');
+ }
+ toggle8.addEventListener('click',function(){
+   body8.style.display=body8.style.display==='none'?'block':'none';
+   if(body8.style.display==='block')render8();
+ });
+ filter8.addEventListener('input',render8);
+ csv8.addEventListener('click',function(){
+   const rows=rows8().sort((a,b)=>a.no-b.no);
+   if(!rows.length){msg8.style.color='#9a6700';msg8.textContent='Ainda não há resultados salvos para exportar.';return}
+   const head=['Nº','Aluno','Acertos Ed. Física','Nota EF','Acertos Inglês','Nota Inglês','Acertos Português','Nota Português','Acertos Arte','Nota Arte'];
+   const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+   const data=rows.map(r=>[
+     r.no,correctedName8(r),`${r.ef.acertos}/${r.ef.total}`,r.ef.nota,
+     `${r.ingles.acertos}/${r.ingles.total}`,r.ingles.nota,
+     `${r.portugues.acertos}/${r.portugues.total}`,r.portugues.nota,
+     `${r.arte.acertos}/${r.arte.total}`,r.arte.nota
+   ]);
+   const csv='\uFEFF'+[head,...data].map(row=>row.map(quote).join(';')).join('\r\n');
+   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement('a');a.href=url;a.download='Resultados_8A.csv';
+   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+   msg8.style.color='#16794b';msg8.textContent=`Arquivo preparado com ${rows.length} aluno(s).`;
+ });
+ window.addEventListener('storage',()=>{if(body8.style.display!=='none')render8()});
+})();
+</script>
+
 </body></html>
