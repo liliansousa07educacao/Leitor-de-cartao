@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Leitor de Cartão-Resposta — 8º A</title>
+<title>Leitor de Cartão-Resposta v4</title>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:980px;margin:0 auto;padding:16px}.card{background:white;border:1px solid #d8dee9;border-radius:16px;padding:16px;margin-bottom:14px}.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}h1{font-size:22px;margin:0}.muted{color:#5e6878;font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:720px){.wrap{padding:8px}.card{padding:10px}.grid{grid-template-columns:1fr}.cameraBox{min-height:72vh;max-height:82vh;border-radius:12px}.cameraBox video,.cameraBox canvas{object-fit:cover;background:#111}.guide:before{top:8px;padding:0 8px}.actions button{flex:1 1 46%;font-size:17px;padding:14px 10px}}label{font-weight:600;font-size:14px}select,input,button{font:inherit}select,input{width:100%;padding:11px;border:1px solid #cfd6e2;border-radius:10px;background:white}button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}.primary{background:#0b66ff;color:white}.secondary{background:#eaf1ff;color:#0b4db8}.danger{background:#fff1f1;color:#9a1d1d}.actions{display:flex;gap:10px;flex-wrap:wrap}.cameraBox{position:relative;width:100%;aspect-ratio:3/4;min-height:68vh;max-height:82vh;background:#111;border-radius:16px;overflow:hidden}.cameraBox video,.cameraBox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.guide{position:absolute;left:8%;right:8%;top:23%;bottom:13%;border:3px solid rgba(0,255,115,.95);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.26);pointer-events:none}.guide:before{content:'Enquadre somente o CARTÃO-RESPOSTA dentro desta moldura';position:absolute;left:0;right:0;top:-34px;color:white;font-weight:700;text-align:center;font-size:13px;text-shadow:0 1px 2px #000}.status{padding:10px 12px;border-radius:10px;background:#f0f4f9;font-size:14px}.ok{background:#edf9f0;color:#145c2c}.warn{background:#fff7e8;color:#7a4b00}.error{background:#fff0f0;color:#8c1d1d}.results{overflow:auto}.results table{width:100%;border-collapse:collapse;min-width:680px}.results th,.results td{padding:8px;border-bottom:1px solid #e4e8ef;text-align:center}.results th:first-child,.results td:first-child{text-align:left}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#edf2f7;font-size:12px}.answerGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.answerGrid div{padding:8px;border:1px solid #e2e7ef;border-radius:8px;text-align:center;font-size:13px}.small{font-size:12px}.hidden{display:none!important}.progress{font-weight:800}.studentCards{display:none}.studentCard{border:1px solid #e2e7ef;border-radius:12px;padding:12px;margin:9px 0;background:#fff}.studentCard .name{font-weight:800;margin-bottom:8px}.studentCard .notes{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.studentCard .note{background:#f5f7fb;border-radius:9px;padding:8px;font-size:13px}.scoreCards{display:none}.scoreItem{border:1px solid #e2e7ef;border-radius:12px;padding:12px}.scoreItem b{display:block}.scoreItem .big{font-size:22px;font-weight:800;margin-top:4px}@media(max-width:720px){.results.scoreTable{display:none}.scoreCards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.classTable{display:none}.studentCards{display:block}.answerGrid{grid-template-columns:repeat(3,1fr)}}
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:980px;margin:0 auto;padding:16px}.card{background:white;border:1px solid #d8dee9;border-radius:16px;padding:16px;margin-bottom:14px}.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}h1{font-size:22px;margin:0}.muted{color:#5e6878;font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:720px){.grid{grid-template-columns:1fr}}label{font-weight:600;font-size:14px}select,input,button{font:inherit}select,input{width:100%;padding:11px;border:1px solid #cfd6e2;border-radius:10px;background:white}button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}.primary{background:#0b66ff;color:white}.secondary{background:#eaf1ff;color:#0b4db8}.danger{background:#fff1f1;color:#9a1d1d}.actions{display:flex;gap:10px;flex-wrap:wrap}.cameraBox{position:relative;width:100%;aspect-ratio:3/4;background:#111;border-radius:16px;overflow:hidden}.cameraBox video,.cameraBox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.guide{position:absolute;left:8%;right:8%;top:23%;bottom:13%;border:3px solid rgba(0,255,115,.95);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.26);pointer-events:none}.guide:before{content:'Enquadre somente o CARTÃO-RESPOSTA dentro desta moldura';position:absolute;left:0;right:0;top:-34px;color:white;font-weight:700;text-align:center;font-size:13px;text-shadow:0 1px 2px #000}.status{padding:10px 12px;border-radius:10px;background:#f0f4f9;font-size:14px}.ok{background:#edf9f0;color:#145c2c}.warn{background:#fff7e8;color:#7a4b00}.error{background:#fff0f0;color:#8c1d1d}.results{overflow:auto}.results table{width:100%;border-collapse:collapse;min-width:680px}.results th,.results td{padding:8px;border-bottom:1px solid #e4e8ef;text-align:center}.results th:first-child,.results td:first-child{text-align:left}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#edf2f7;font-size:12px}.answerGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.answerGrid div{padding:8px;border:1px solid #e2e7ef;border-radius:8px;text-align:center;font-size:13px}.small{font-size:12px}.hidden{display:none!important}
 </style>
 </head>
 <body>
@@ -16,8 +16,8 @@
   </div>
 
   <div class="card grid">
-    <div><label>Aluno</label><select id="student"></select><div class="muted small" id="studentState" style="margin-top:5px"></div></div>
-    <div><label>Turma</label><select id="className"><option value="8º A">8º A</option></select><div class="muted small progress" id="progress" style="margin-top:5px">Progresso: 0/40 corrigidos</div></div>
+    <div><label>Aluno</label><input id="student" placeholder="Digite ou selecione o nome do aluno"></div>
+    <div><label>Turma</label><input id="className" value="8º A"></div>
     <div><label>Gabarito</label><select id="keyPreset"><option value="8visual">8º ano — Arte Visuais</option></select></div>
     <div><label>Modo de leitura</label><select id="mode"><option value="camera">Câmera</option><option value="file">Foto do aparelho</option></select></div>
   </div>
@@ -49,15 +49,21 @@
   <div class="card hidden" id="scoreCard">
     <b>Resultado</b>
     <div style="height:10px"></div>
-    <div class="results scoreTable"><table><thead><tr><th>Disciplina</th><th>Questões</th><th>Acertos</th><th>Nota</th></tr></thead><tbody id="scoreBody"></tbody></table></div><div id="scoreCards" class="scoreCards"></div>
+    <div class="results"><table>
+      <thead><tr><th>Disciplina</th><th>Questões</th><th>Acertos</th><th>Nota</th></tr></thead>
+      <tbody id="scoreBody"></tbody>
+    </table></div>
     <div style="height:12px"></div>
-    <div class="actions"><button id="save" class="primary">Salvar aluno e ir para o próximo</button></div>
+    <div class="actions"><button id="save" class="primary">Adicionar ao quadro</button></div>
   </div>
 
   <div class="card">
-    <div class="top"><div><b>Quadro da turma</b><div class="muted small" id="classProgress">0 de 40 corrigidos</div></div><button id="exportCsv" class="secondary">Exportar CSV</button></div>
+    <div class="top"><b>Quadro da turma</b><button id="exportCsv" class="secondary">Exportar CSV</button></div>
     <div style="height:10px"></div>
-    <div class="results classTable"><table><thead><tr><th>Nº</th><th>Aluno</th><th>EF acertos</th><th>EF nota</th><th>Ing. acertos</th><th>Ing. nota</th><th>Port. acertos</th><th>Port. nota</th><th>Arte acertos</th><th>Arte nota</th></tr></thead><tbody id="classBody"><tr><td colspan="10" class="muted">Nenhum aluno corrigido ainda.</td></tr></tbody></table></div><div id="studentCards" class="studentCards"><div class="muted">Nenhum aluno corrigido ainda.</div></div>
+    <div class="results"><table>
+      <thead><tr><th>Aluno</th><th>EF acertos</th><th>EF nota</th><th>Ing. acertos</th><th>Ing. nota</th><th>Port. acertos</th><th>Port. nota</th><th>Arte acertos</th><th>Arte nota</th></tr></thead>
+      <tbody id="classBody"><tr><td colspan="9" class="muted">Nenhum aluno corrigido ainda.</td></tr></tbody>
+    </table></div>
   </div>
 
   <div class="card small muted">
@@ -68,18 +74,9 @@
 <script>
 const key8Visual = ['C','A','D','B','B','C','D','A','B','C','C','A','C','D','D','D','A','C','B','B','D','D','A','A','B','A','D','B','D','D'];
 const key = key8Visual;
-const roster8A = [
-'ADRIAN RAFAEL PANTOJA ALVES','ALYSSON GABRIEL FERREIRA','ANNA CLARA MARTINS MONTALVÃO','ANNA JULIA BEZERRA LOPIS','CARLOS EDUARDO LOPES SANTOS','DAVI ALVES BISPO','DAVI DE SOUZA LIMA','DAVI PACHECO GONÇALVES','EDUARDA ARAÚJO BEZERRA','EDUARDO GONZAGA FERREIRA','EDUARDO PINHEIRO PONTES','ELIZABETH VITÓRIA SOARES DOS SANTOS','GABRIEL MACEDO DA SILVA','GERINDAVI GOMES DE SOUSA','GUSTAVO NOGUEIRA FREIRE','HAILLEANDRO BATISTA DOS SANTOS','HEITOR GONÇALVES INÁCIO','ISADORA COSTA RIBEIRO','JOÃO VITOR ALVES BORGES','JOHN CABRAL GUIMARÃES','JORDAN PACHECO MOTA','JULHIA RODRIGUES PEREIRA','LAURA NUNES BATISTA','LUCAS GABRIEL SILVA DE SOUSA','MARCOS KAUÃ RIBEIRO LISBOA','MARIA CLARA ALVES BORGES SILVA','MARYANA SOPHIA VASCONCELOS VIEIRA','MATEUS GABRIEL INÁCIO ALVES','MATHEUS OLIVEIRA MONTALVÃO','MILO EDWARD QUISPE DORI','NICOLAS DOURADO MACHADO','PEDRO ELEUTERIO DE OLIVEIRA','RAFAEL GOMES C. DE SOUSA','RAFAEL SOLDAGA GUIRRA SCALZITTI','ROBERTA SILVA MARQUES','SOPHIA DE FREITAS CABRAL','SUELLEN CRISTINA SANTOS SILVA','VICTOR MIGUEL SIMÕES','TALLYTA MAURIZ SOUZA','MIGUEL JOSÉ RIBEIRO SANTOS'];
-const STORAGE_KEY='leitor_cartao_8A_v5';
 const state = {stream:null, answers:Array(30).fill('?'), uncertain:new Set(), rows:[]};
-try{state.rows=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){state.rows=[]}
 const $ = id => document.getElementById(id);
 const statusEl=$('status'), video=$('video'), canvas=$('canvas'), guide=$('guide');
-function initRoster(){const sel=$('student');sel.innerHTML=roster8A.map((n,i)=>`<option value="${i}">${i+1}. ${escapeHtml(n)}</option>`).join('');sel.addEventListener('change',updateStudentState);renderClassTable();updateStudentState();}
-function updateStudentState(){const i=+$('student').value;const done=state.rows.some(r=>r.no===i+1);$('studentState').textContent=done?'Este aluno já foi corrigido. Salvar novamente substituirá o resultado.':'Aguardando correção.';}
-function persist(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state.rows));}
-function resetReading(){state.answers=Array(30).fill('?');state.uncertain.clear();$('readingCard').classList.add('hidden');$('scoreCard').classList.add('hidden');canvas.classList.add('hidden');video.classList.remove('hidden');guide.classList.remove('hidden');$('retry').classList.add('hidden');}
-
 function setStatus(msg,type=''){statusEl.className='status '+type;statusEl.innerHTML=msg}
 
 $('mode').addEventListener('change',()=>{ const cam=$('mode').value==='camera'; $('openCamera').style.display=cam?'inline-block':'none'; $('capture').style.display=cam?'inline-block':'none'; $('choosePhoto').style.display=cam?'inline-block':'inline-block'; });
@@ -119,7 +116,7 @@ function processWholePhoto(){
     setStatus(`Cartão inteiro reconhecido: <b>30/30 respostas</b>. ${state.uncertain.size?'<b>'+state.uncertain.size+'</b> questão(ões) para conferir.':'Pronto para conferir e salvar.'}`,'ok');
     return;
   }
-  setStatus('Ainda não consegui fechar as 30 marcações. Ajuste o cartão dentro da moldura grande e toque em Ler cartão novamente; nenhuma nota foi calculada.','warn');
+  setStatus('Não consegui localizar as 30 marcações com segurança. Tire outra foto mais reta e nítida; nenhuma nota foi calculada.','warn');
   state.answers=[]; state.uncertain.clear(); $('readingCard').classList.add('hidden'); $('scoreCard').classList.add('hidden'); return;
 }
 function detectColoredMarks(){
@@ -253,29 +250,12 @@ function getScores(){
   const ef=scoreRange(1,5),ing=scoreRange(6,10),port=scoreRange(11,25),arte=scoreRange(26,30);
   return {ef,ing,port,arte,efn:ef*2,ingn:ing*2,portn:port/15*10,arten:arte*2};
 }
-function renderScores(){const s=getScores();$('scoreBody').innerHTML=`<tr><td>Educação Física</td><td>1–5</td><td>${s.ef}/5</td><td>${fmt(s.efn)}</td></tr><tr><td>Língua Inglesa</td><td>6–10</td><td>${s.ing}/5</td><td>${fmt(s.ingn)}</td></tr><tr><td>Língua Portuguesa</td><td>11–25</td><td>${s.port}/15</td><td>${fmt(s.portn)}</td></tr><tr><td>Arte</td><td>26–30</td><td>${s.arte}/5</td><td>${fmt(s.arten)}</td></tr>`;$('scoreCards').innerHTML=`<div class="scoreItem"><b>Educação Física</b><span>1–5 • ${s.ef}/5 acertos</span><div class="big">${fmt(s.efn)}</div></div><div class="scoreItem"><b>Inglês</b><span>6–10 • ${s.ing}/5 acertos</span><div class="big">${fmt(s.ingn)}</div></div><div class="scoreItem"><b>Português</b><span>11–25 • ${s.port}/15 acertos</span><div class="big">${fmt(s.portn)}</div></div><div class="scoreItem"><b>Arte</b><span>26–30 • ${s.arte}/5 acertos</span><div class="big">${fmt(s.arten)}</div></div>`}
+function renderScores(){const s=getScores();$('scoreBody').innerHTML=`<tr><td>Educação Física</td><td>1–5</td><td>${s.ef}/5</td><td>${fmt(s.efn)}</td></tr><tr><td>Língua Inglesa</td><td>6–10</td><td>${s.ing}/5</td><td>${fmt(s.ingn)}</td></tr><tr><td>Língua Portuguesa</td><td>11–25</td><td>${s.port}/15</td><td>${fmt(s.portn)}</td></tr><tr><td>Arte</td><td>26–30</td><td>${s.arte}/5</td><td>${fmt(s.arten)}</td></tr>`}
 function fmt(n){return n.toFixed(2).replace('.',',').replace(/,00$/,',0')}
-$('save').addEventListener('click',()=>{
-  if(state.answers.length!==30||state.answers.includes('?')){setStatus('Faça a leitura completa do cartão antes de salvar.','warn');return;}
-  const idx=+$('student').value, student=roster8A[idx], no=idx+1, s=getScores();
-  const pos=state.rows.findIndex(r=>r.no===no); const row={no,student,className:$('className').value,...s};
-  if(pos>=0){if(!confirm(`${student} já possui resultado salvo. Deseja substituir?`))return;state.rows[pos]=row}else state.rows.push(row);
-  state.rows.sort((a,b)=>a.no-b.no);persist();renderClassTable();
-  const next=roster8A.findIndex((_,i)=>i>idx&&!state.rows.some(r=>r.no===i+1));
-  const any=roster8A.findIndex((_,i)=>!state.rows.some(r=>r.no===i+1));
-  const target=next>=0?next:any;
-  if(target>=0){$('student').value=String(target);resetReading();updateStudentState();setStatus(`Resultado de <b>${student}</b> salvo. Próximo aluno: <b>${target+1}. ${roster8A[target]}</b>.`,'ok');}
-  else{updateStudentState();setStatus(`Resultado de <b>${student}</b> salvo. <b>Turma concluída: 40/40.</b>`,'ok');}
-});
-function renderClassTable(){
-  const b=$('classBody'),cards=$('studentCards');b.innerHTML='';cards.innerHTML='';
-  if(!state.rows.length){b.innerHTML='<tr><td colspan="10" class="muted">Nenhum aluno corrigido ainda.</td></tr>';cards.innerHTML='<div class="muted">Nenhum aluno corrigido ainda.</div>'}
-  state.rows.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${r.no}</td><td>${escapeHtml(r.student)}</td><td>${r.ef}</td><td>${fmt(r.efn)}</td><td>${r.ing}</td><td>${fmt(r.ingn)}</td><td>${r.port}</td><td>${fmt(r.portn)}</td><td>${r.arte}</td><td>${fmt(r.arten)}</td>`;b.appendChild(tr);const d=document.createElement('div');d.className='studentCard';d.innerHTML=`<div class="name">${r.no}. ${escapeHtml(r.student)}</div><div class="notes"><div class="note"><b>Ed. Física</b><br>${r.ef}/5 • Nota ${fmt(r.efn)}</div><div class="note"><b>Inglês</b><br>${r.ing}/5 • Nota ${fmt(r.ingn)}</div><div class="note"><b>Português</b><br>${r.port}/15 • Nota ${fmt(r.portn)}</div><div class="note"><b>Arte</b><br>${r.arte}/5 • Nota ${fmt(r.arten)}</div></div>`;cards.appendChild(d)});
-  $('progress').textContent=`Progresso: ${state.rows.length}/40 corrigidos`;$('classProgress').textContent=`${state.rows.length} de 40 corrigidos`;
-}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-$('exportCsv').addEventListener('click',()=>{if(!state.rows.length){setStatus('Ainda não há resultados para exportar.','warn');return;}const head=['Nº','Aluno','Turma','EF acertos','EF nota','Ingles acertos','Ingles nota','Portugues acertos','Portugues nota','Arte acertos','Arte nota'];const lines=[head.join(';'),...state.rows.map(r=>[r.no,r.student,r.className,r.ef,r.efn.toFixed(2),r.ing,r.ingn.toFixed(2),r.port,r.portn.toFixed(2),r.arte,r.arten.toFixed(2)].map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';'))];const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='8A_quadro_notas.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
-initRoster();
+$('save').addEventListener('click',()=>{const student=$('student').value.trim();if(!student){setStatus('Digite o nome do aluno antes de adicionar ao quadro.','warn');$('student').focus();return;}const s=getScores();state.rows.push({student,className:$('className').value.trim(),...s});renderClassTable();setStatus(`Resultado de <b>${student}</b> adicionado ao quadro.`,'ok');});
+function renderClassTable(){const b=$('classBody');b.innerHTML='';state.rows.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${escapeHtml(r.student)}</td><td>${r.ef}</td><td>${fmt(r.efn)}</td><td>${r.ing}</td><td>${fmt(r.ingn)}</td><td>${r.port}</td><td>${fmt(r.portn)}</td><td>${r.arte}</td><td>${fmt(r.arten)}</td>`;b.appendChild(tr)})}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+$('exportCsv').addEventListener('click',()=>{if(!state.rows.length){setStatus('Ainda não há resultados para exportar.','warn');return;}const head=['Aluno','Turma','EF acertos','EF nota','Ingles acertos','Ingles nota','Portugues acertos','Portugues nota','Arte acertos','Arte nota'];const lines=[head.join(';'),...state.rows.map(r=>[r.student,r.className,r.ef,r.efn.toFixed(2),r.ing,r.ingn.toFixed(2),r.port,r.portn.toFixed(2),r.arte,r.arten.toFixed(2)].map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';'))];const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='quadro_notas.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
 </script>
 </body>
 </html>
