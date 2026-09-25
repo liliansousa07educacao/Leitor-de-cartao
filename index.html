@@ -1,79 +1,16 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Leitor de Cartão</title><style>
-*{box-sizing:border-box}body{margin:0;background:#f4f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#172033}.wrap{max-width:760px;margin:auto;padding:12px}.card{background:#fff;border:1px solid #dbe2ec;border-radius:16px;padding:14px;margin-bottom:12px}h1{font-size:21px;margin:0 0 4px}.muted{color:#667085;font-size:13px}.viewer{position:relative;width:100%;height:min(68vh,680px);min-height:430px;background:#111;border-radius:14px;overflow:hidden;margin:12px 0}.viewer video,.viewer canvas{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}.guide{position:absolute;left:5%;right:5%;top:8%;bottom:8%;border:3px solid #00e676;border-radius:10px;pointer-events:none}.guide span{position:absolute;top:-30px;left:0;right:0;color:#fff;text-align:center;font-weight:700;text-shadow:0 1px 3px #000;font-size:13px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.actions .wide{grid-column:1/-1}button{border:0;border-radius:12px;padding:13px 10px;font:inherit;font-weight:750}.primary{background:#1265e8;color:#fff}.secondary{background:#e8f0ff;color:#184f9f}.status{padding:11px;border-radius:10px;background:#eef2f7;font-size:14px;margin-top:10px}.ok{background:#eaf8ee;color:#166534}.warn{background:#fff6df;color:#805500}.answers{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.ans{border:1px solid #dde4ee;border-radius:9px;padding:8px 4px;text-align:center;font-size:13px}.ans b{font-size:15px}.scoregrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.scorebox{border:1px solid #dde4ee;border-radius:12px;padding:11px}.scorebox b{display:block;font-size:15px}.scorebox .note{font-size:22px;font-weight:800;margin-top:3px}.hidden{display:none!important}@media(max-width:480px){.wrap{padding:8px}.scoregrid{grid-template-columns:1fr 1fr}.viewer{height:64vh;min-height:390px}.answers{grid-template-columns:repeat(5,1fr)}}
-</style></head><body><div class="wrap"><div class="card">
-  <label for="studentSearch"><b>Aluno — 8º A</b></label>
-  <input id="studentSearch" placeholder="Digite as primeiras letras do nome" autocomplete="off">
-  <datalist id="studentOptions"></datalist><div id="liveStudentList" style="display:none;margin-top:6px;border:1px solid #cfd6e2;border-radius:10px;background:#fff;max-height:260px;overflow-y:auto;box-shadow:0 6px 18px rgba(0,0,0,.12)"></div>
-  <div id="selectedStudent" class="muted" style="margin-top:8px">Nenhum aluno selecionado.</div>
-</div>
-<div class="card"><h1>Leitor de Cartão-Resposta</h1><div class="muted">Base do leitor • 30 questões A/B/C/D</div><div class="viewer" id="viewer"><video id="video" autoplay playsinline></video><canvas id="canvas" class="hidden"></canvas><div class="guide" id="guide"><span>Enquadre o cartão inteiro</span></div></div><div class="actions"><button class="primary" id="camera">Abrir câmera</button><button class="secondary" id="photo">Escolher foto</button><button class="primary wide" id="read" disabled>Ler cartão</button><button class="secondary wide hidden" id="again">Nova leitura</button></div><input id="file" type="file" accept="image/*" capture="environment" class="hidden"><div id="status" class="status">Abra a câmera ou escolha uma foto.</div></div><div class="card hidden" id="result"><b>Respostas detectadas</b><div class="answers" id="answers" style="margin-top:10px"></div></div><div class="card hidden" id="scores"><b>Resultado pelo gabarito — 8º A • Arte Visuais</b><div class="muted" style="margin:4px 0 10px">Notas calculadas somente após a leitura 30/30.</div><div class="scoregrid" id="scoreGrid"></div></div><div class="card" id="savePanel"><b>Salvar resultado do aluno</b><div class="muted" style="margin:4px 0 10px">Use somente depois que aparecer 30/30 e as quatro notas.</div><button class="primary" id="saveStudent" style="width:100%">Salvar aluno e ir para o próximo</button>
-<button id="deleteStudent" style="width:100%;margin-top:8px;background:#fff1f1;color:#9a1d1d">Excluir resultado deste aluno</button><div id="saveMsg" class="status" style="margin-top:10px">Nenhum resultado salvo nesta etapa.</div><div class="muted" id="classProgress" style="margin-top:8px">0 de 40 corrigidos</div></div></div><script>
-// ETAPA 2: pesquisa de aluno. O motor 30/30 abaixo permanece intacto.
-const roster8A = [
-'ADRIAN RAFAEL PANTOJA ALVES','ALYSSON GABRIEL FERREIRA','ANNA CLARA MARTINS MONTALVÃO','ANNA JULIA BEZERRA LOPIS','CARLOS EDUARDO LOPES SANTOS','DAVI ALVES BISPO','DAVI DE SOUZA LIMA','DAVI PACHECO GONÇALVES','EDUARDA ARAÚJO BEZERRA','EDUARDO GONZAGA FERREIRA','EDUARDO PINHEIRO PONTES','ELIZABETH VITÓRIA SOARES DOS SANTOS','GABRIEL MACEDO DA SILVA','GERINDAVI GOMES DE SOUSA','GUSTAVO NOGUEIRA FREIRE','HAILLEANDRO BATISTA DOS SANTOS','HEITOR GONÇALVES INÁCIO','ISADORA COSTA RIBEIRO','JOÃO VITOR ALVES BORGES','JOHN CABRAL GUIMARÃES','JORDAN PACHECO MOTA','JULHIA RODRIGUES PEREIRA','LAURA NUNES BATISTA','LUCAS GABRIEL SILVA DE SOUSA','MARCOS KAUÃ RIBEIRO LISBOA','MARIA CLARA ALVES BORGES SILVA','MARYANA SOPHIA VASCONCELOS VIEIRA','MATEUS GABRIEL INÁCIO ALVES','MATHEUS OLIVEIRA MONTALVÃO','MILO EDWARD QUISPE DORI','NICOLAS DOURADO MACHADO','PEDRO ELEUTERIO DE OLIVEIRA','RAFAEL GOMES C. DE SOUSA','RAFAEL SOLDAGA GUIRRA SCALZITTI','ROBERTA SILVA MARQUES','SOPHIA DE FREITAS CABRAL','SUELLEN CRISTINA SANTOS SILVA','VICTOR MIGUEL SIMÕES','TALLYTA MAURIZ SOUZA','MIGUEL JOSÉ RIBEIRO SANTOS'];
-const studentSearch=document.getElementById('studentSearch');
-const studentOptions=document.getElementById('studentOptions');
-const selectedStudent=document.getElementById('selectedStudent');
-studentOptions.innerHTML=roster8A.map((n,i)=>`<option value="${n}">${i+1}. ${n}</option>`).join('');
-function normStudent(s){return(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();}
-function showStudent(){
- const i=roster8A.findIndex(n=>normStudent(n)===normStudent(studentSearch.value));
- selectedStudent.textContent=i>=0?`${i+1}. ${roster8A[i]} — selecionado`:(studentSearch.value.trim()?'Continue digitando e escolha uma opção.':'Nenhum aluno selecionado.');
-}
-studentSearch.addEventListener('input',showStudent);
-studentSearch.addEventListener('change',showStudent);
-// ETAPA 6C: lista visual propria; abre automaticamente ao digitar.
-// Nao altera camera, detector, gabarito, notas, salvar ou excluir.
-const liveStudentList=document.getElementById('liveStudentList');
-function refreshLiveStudentList(){
-  const q=normStudent(studentSearch.value);
-  liveStudentList.innerHTML='';
-  if(!q){liveStudentList.style.display='none';return;}
-  const hits=roster8A.map((n,i)=>({n,i})).filter(x=>normStudent(x.n).startsWith(q));
-  if(!hits.length){liveStudentList.style.display='none';return;}
-  hits.forEach(x=>{
-    const row=document.createElement('div');
-    row.textContent=`${x.i+1}. ${x.n}`;
-    row.style.cssText='padding:13px 12px;border-bottom:1px solid #edf0f4;font-weight:650;cursor:pointer;-webkit-tap-highlight-color:transparent';
-    row.addEventListener('pointerdown',e=>{
-      e.preventDefault();
-      studentSearch.value=x.n;
-      showStudent();
-      liveStudentList.style.display='none';
-      studentSearch.blur();
-    });
-    liveStudentList.appendChild(row);
-  });
-  liveStudentList.style.display='block';
-}
-studentSearch.addEventListener('input',refreshLiveStudentList);
-studentSearch.addEventListener('keyup',refreshLiveStudentList);
-
-
-
-// ETAPA 3: gabarito e notas. As ETAPAS 1 e 2 acima ficam congeladas.
-const key8Visual=['C','A','D','B','B','C','D','A','B','C','C','A','C','D','D','D','A','C','B','B','D','D','A','A','B','A','D','B','D','D'];
-function calcScores(a){
- const parts=[
-  {name:'Educação Física',start:0,end:5,total:5},
-  {name:'Língua Inglesa',start:5,end:10,total:5},
-  {name:'Língua Portuguesa',start:10,end:25,total:15},
-  {name:'Arte (Visuais)',start:25,end:30,total:5}
- ];
- const grid=document.getElementById('scoreGrid');
- grid.innerHTML=parts.map(p=>{let hits=0;for(let i=p.start;i<p.end;i++)if(a[i]===key8Visual[i])hits++;let grade=(hits/p.total*10).toFixed(1).replace('.',',');return `<div class="scorebox"><b>${p.name}</b><div>${hits}/${p.total} acertos</div><div class="note">Nota ${grade}</div></div>`}).join('');
- document.getElementById('scores').classList.remove('hidden');
-}
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#172033}.wrap{max-width:760px;margin:auto;padding:12px}.card{background:#fff;border:1px solid #dbe2ec;border-radius:16px;padding:14px;margin-bottom:12px}h1{font-size:21px;margin:0 0 4px}.muted{color:#667085;font-size:13px}.viewer{position:relative;width:100%;height:min(68vh,680px);min-height:430px;background:#111;border-radius:14px;overflow:hidden;margin:12px 0}.viewer video,.viewer canvas{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}.guide{position:absolute;left:5%;right:5%;top:8%;bottom:8%;border:3px solid #00e676;border-radius:10px;pointer-events:none}.guide span{position:absolute;top:-30px;left:0;right:0;color:#fff;text-align:center;font-weight:700;text-shadow:0 1px 3px #000;font-size:13px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.actions .wide{grid-column:1/-1}button{border:0;border-radius:12px;padding:13px 10px;font:inherit;font-weight:750}.primary{background:#1265e8;color:#fff}.secondary{background:#e8f0ff;color:#184f9f}.status{padding:11px;border-radius:10px;background:#eef2f7;font-size:14px;margin-top:10px}.ok{background:#eaf8ee;color:#166534}.warn{background:#fff6df;color:#805500}.answers{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.ans{border:1px solid #dde4ee;border-radius:9px;padding:8px 4px;text-align:center;font-size:13px}.ans b{font-size:15px}.hidden{display:none!important}@media(max-width:480px){.wrap{padding:8px}.viewer{height:64vh;min-height:390px}.answers{grid-template-columns:repeat(5,1fr)}}
+</style></head><body><div class="wrap"><div class="card"><h1>Leitor de Cartão-Resposta</h1><div class="muted">Base do leitor • 30 questões A/B/C/D</div><div class="viewer" id="viewer"><video id="video" autoplay playsinline></video><canvas id="canvas" class="hidden"></canvas><div class="guide" id="guide"><span>Enquadre o cartão inteiro</span></div></div><div class="actions"><button class="primary" id="camera">Abrir câmera</button><button class="secondary" id="photo">Escolher foto</button><button class="primary wide" id="read" disabled>Ler cartão</button><button class="secondary wide hidden" id="again">Nova leitura</button></div><input id="file" type="file" accept="image/*" capture="environment" class="hidden"><div id="status" class="status">Abra a câmera ou escolha uma foto.</div></div><div class="card hidden" id="result"><b>Respostas detectadas</b><div class="answers" id="answers" style="margin-top:10px"></div></div></div><script>
 const $=id=>document.getElementById(id), video=$('video'),canvas=$('canvas'),guide=$('guide'),statusEl=$('status');let stream=null;
 function status(t,c=''){statusEl.className='status '+c;statusEl.innerHTML=t}
 $('camera').onclick=async()=>{try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:2560}},audio:false});video.srcObject=stream;$('read').disabled=false;status('Câmera aberta. Deixe o cartão inteiro visível e toque em <b>Ler cartão</b>.','ok')}catch(e){status('Não consegui abrir a câmera. Permita o acesso ou use <b>Escolher foto</b>.','warn')}};
 $('photo').onclick=()=>$('file').click();$('file').onchange=async e=>{let f=e.target.files[0];if(!f)return;let img=await load(f);draw(img);analyze()};
 $('read').onclick=()=>{if(!video.videoWidth)return status('Aguarde a câmera carregar.','warn');canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0);showCanvas();analyze()};
-$('again').onclick=()=>{canvas.classList.add('hidden');video.classList.remove('hidden');guide.classList.remove('hidden');$('again').classList.add('hidden');$('result').classList.add('hidden');$('scores').classList.add('hidden');status('Faça uma nova leitura.','')};
+$('again').onclick=()=>{canvas.classList.add('hidden');video.classList.remove('hidden');guide.classList.remove('hidden');$('again').classList.add('hidden');$('result').classList.add('hidden');status('Faça uma nova leitura.','')};
 function load(f){return new Promise((res,rej)=>{let u=URL.createObjectURL(f),i=new Image;i.onload=()=>{URL.revokeObjectURL(u);res(i)};i.onerror=rej;i.src=u})}
 function draw(img){let max=1200,s=Math.min(1,max/img.width);canvas.width=Math.round(img.width*s);canvas.height=Math.round(img.height*s);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);showCanvas()}
 function showCanvas(){canvas.classList.remove('hidden');video.classList.add('hidden');guide.classList.add('hidden');$('again').classList.remove('hidden')}
-function analyze(){let r=detectMarks();if(!r){$('result').classList.add('hidden');return status('Ainda não localizei as 30 marcações. Mantenha o cartão inteiro na imagem.','warn')}render(r.answers);calcScores(r.answers);status(`Cartão reconhecido: <b>30/30 respostas</b>${r.uncertain.length?`. ${r.uncertain.length} para conferir.`:'.'}`,'ok')}
+function analyze(){let r=detectMarks();if(!r){$('result').classList.add('hidden');return status('Ainda não localizei as 30 marcações. Mantenha o cartão inteiro na imagem.','warn')}render(r.answers);status(`Cartão reconhecido: <b>30/30 respostas</b>${r.uncertain.length?`. ${r.uncertain.length} para conferir.`:'.'}`,'ok')}
 function detectMarks(){const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,d=ctx.getImageData(0,0,w,h).data,N=w*h,mask=new Uint8Array(N);
  for(let p=0,i=0;p<N;p++,i+=4){let r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g),mn=Math.min(r,g,b),M=Math.max(r,g,b);if(b>45&&r<205&&g<205&&(b-mx)>6&&((b+r*.25)-g)>22&&(M-mn)>18)mask[p]=1}
  const seen=new Uint8Array(N), comps=[], stack=[];let minA=Math.max(10,Math.floor(N*.000012)),maxA=Math.floor(N*.008);
@@ -88,111 +25,4 @@ function selectRows(side,h){side=side.slice().sort((a,b)=>a.y-b.y);let gs=[];for
 function decode(groups,off){let marks=groups.map(g=>g.pts.sort((a,b)=>b.area-a.area)[0]),xs=marks.map(p=>p.x).sort((a,b)=>a-b);let lo=xs[0],hi=xs[xs.length-1],span=hi-lo;if(span<10)return null;let step=span/3,base=lo; // refine using candidate lattice
  let best={e:1e99,b:base,s:step};for(let s=step*.72;s<=step*1.28;s+=step*.02){for(let b=lo-s*.25;b<=lo+s*.25;b+=Math.max(1,s*.03)){let e=0;for(let x of xs){let k=Math.max(0,Math.min(3,Math.round((x-b)/s)));e+=(x-(b+k*s))**2}if(e<best.e)best={e,b,s}}}base=best.b;step=best.s;let a=[],u=[],letters='ABCD';marks.forEach((p,i)=>{let k=Math.max(0,Math.min(3,Math.round((p.x-base)/step))),err=Math.abs(p.x-(base+k*step));a.push(letters[k]);if(err>step*.38)u.push(off+i+1)});return{a,u}}
 function render(a){$('answers').innerHTML=a.map((v,i)=>`<div class="ans">${i+1}<br><b>${v}</b></div>`).join('');$('result').classList.remove('hidden')}
-
-
-// ETAPA 4B: modulo isolado de salvamento. Nao altera camera, leitura, deteccao ou calculo.
-(function(){
- const STORE='leitor8A_resultados_etapa4b';
- const btn=document.getElementById('saveStudent');
- const msg=document.getElementById('saveMsg');
- const prog=document.getElementById('classProgress');
- function getRows(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch(e){return[]}}
- function setRows(rows){localStorage.setItem(STORE,JSON.stringify(rows))}
- function selectedIndex(){return roster8A.findIndex(n=>normStudent(n)===normStudent(studentSearch.value))}
- function updateProgress(){prog.textContent=`${getRows().length} de ${roster8A.length} corrigidos`}
- function parseScores(){
-   const boxes=[...document.querySelectorAll('#scoreGrid .scorebox')];
-   if(boxes.length!==4 || document.getElementById('scores').classList.contains('hidden')) return null;
-   return boxes.map(b=>{const t=b.innerText;const h=t.match(/(\d+)\/(\d+) acertos/);const n=t.match(/Nota\s+([0-9]+,[0-9]+)/);return h&&n?{acertos:+h[1],total:+h[2],nota:n[1]}:null});
- }
- btn.addEventListener('click',function(){
-   const i=selectedIndex();
-   if(i<0){msg.className='status warn';msg.textContent='Selecione um aluno da lista antes de salvar.';return}
-   const sc=parseScores();
-   if(!sc){msg.className='status warn';msg.textContent='Primeiro faça uma leitura 30/30 e confira as quatro notas.';return}
-   let rows=getRows(), pos=rows.findIndex(r=>r.no===i+1);
-   if(pos>=0 && !confirm('Este aluno ja possui resultado salvo. Deseja substituir?')) return;
-   const row={no:i+1,aluno:roster8A[i],ef:sc[0],ingles:sc[1],portugues:sc[2],arte:sc[3]};
-   if(pos>=0) rows[pos]=row; else rows.push(row);
-   rows.sort((a,b)=>a.no-b.no);setRows(rows);updateProgress();
-   msg.className='status ok';msg.textContent=`Resultado salvo: ${i+1}. ${roster8A[i]}`;
-   let next=-1;for(let k=i+1;k<roster8A.length;k++)if(!rows.some(r=>r.no===k+1)){next=k;break}
-   if(next<0)for(let k=0;k<roster8A.length;k++)if(!rows.some(r=>r.no===k+1)){next=k;break}
-   if(next>=0){studentSearch.value=roster8A[next];showStudent()}else{msg.textContent+=' — turma concluida.'}
- });
- const del=document.getElementById('deleteStudent');
- del.addEventListener('click',function(){
-   const i=selectedIndex();
-   if(i<0){msg.className='status warn';msg.textContent='Selecione o aluno cujo resultado deseja excluir.';return}
-   let rows=getRows(), pos=rows.findIndex(r=>r.no===i+1);
-   if(pos<0){msg.className='status warn';msg.textContent='Este aluno não possui resultado salvo.';return}
-   if(!confirm(`Excluir o resultado salvo de ${i+1}. ${roster8A[i]}?`)) return;
-   rows.splice(pos,1);setRows(rows);updateProgress();
-   msg.className='status ok';msg.textContent=`Resultado excluído: ${i+1}. ${roster8A[i]}`;
- });
- updateProgress();
-})();
-</script>
-<!-- ETAPA 7: editor isolado de nomes. Nao altera leitor, detector, gabarito, notas, salvar ou excluir. -->
-<section id="nameEditorPanel" style="margin:18px 0;padding:18px;border:1px solid #d9dee8;border-radius:16px;background:#fff">
-  <button id="toggleNameEditor" type="button" style="width:100%;padding:14px;border:0;border-radius:12px;background:#eef4ff;color:#1459b8;font-weight:800;font-size:16px">Corrigir nome de aluno</button>
-  <div id="nameEditorBody" style="display:none;margin-top:14px">
-    <div style="font-weight:700;margin-bottom:6px">Aluno selecionado</div>
-    <div id="nameEditorCurrent" style="padding:11px;border-radius:10px;background:#f5f7fa;margin-bottom:10px">Selecione o aluno na lista acima.</div>
-    <label for="nameEditorInput" style="font-weight:700">Nome corrigido</label>
-    <input id="nameEditorInput" type="text" autocomplete="off" placeholder="Digite o nome correto" style="box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cfd6e2;border-radius:10px;font-size:16px;text-transform:uppercase">
-    <button id="saveEditedName" type="button" style="width:100%;margin-top:10px;padding:14px;border:0;border-radius:12px;background:#1769e0;color:#fff;font-weight:800;font-size:16px">Salvar nome corrigido</button>
-    <div id="nameEditorMsg" style="margin-top:9px;font-weight:650"></div>
-  </div>
-</section>
-<script>
-(function(){
- const NAME_STORE_7='leitor8A_nomes_corrigidos_etapa7';
- const toggle7=document.getElementById('toggleNameEditor');
- const body7=document.getElementById('nameEditorBody');
- const current7=document.getElementById('nameEditorCurrent');
- const input7=document.getElementById('nameEditorInput');
- const save7=document.getElementById('saveEditedName');
- const msg7=document.getElementById('nameEditorMsg');
-
- function load7(){try{return JSON.parse(localStorage.getItem(NAME_STORE_7)||'{}')}catch(e){return {}}}
- function apply7(){
-   const m=load7();
-   Object.keys(m).forEach(k=>{const i=Number(k);if(Number.isInteger(i)&&i>=0&&i<roster8A.length)roster8A[i]=m[k]});
-   studentOptions.innerHTML=roster8A.map((n,i)=>`<option value="${n}">${i+1}. ${n}</option>`).join('');
- }
- function selected7(){
-   const v=normStudent(studentSearch.value);
-   return roster8A.findIndex(n=>normStudent(n)===v);
- }
- function sync7(){
-   const i=selected7();
-   if(i<0){current7.textContent='Selecione o aluno na lista acima.';input7.value='';return}
-   current7.textContent=`${i+1}. ${roster8A[i]}`;
-   input7.value=roster8A[i];
- }
- apply7();
- toggle7.addEventListener('click',function(){
-   body7.style.display=body7.style.display==='none'?'block':'none';
-   if(body7.style.display==='block')sync7();
- });
- studentSearch.addEventListener('change',sync7);
- studentSearch.addEventListener('input',function(){setTimeout(sync7,0)});
- save7.addEventListener('click',function(){
-   const i=selected7();
-   const novo=input7.value.trim().replace(/\s+/g,' ').toUpperCase();
-   if(i<0){msg7.style.color='#9a6700';msg7.textContent='Primeiro selecione o aluno na lista acima.';return}
-   if(!novo){msg7.style.color='#9a6700';msg7.textContent='Digite o nome correto.';return}
-   const antigo=roster8A[i];
-   const m=load7(); m[i]=novo; localStorage.setItem(NAME_STORE_7,JSON.stringify(m));
-   roster8A[i]=novo;
-   studentSearch.value=novo;
-   studentOptions.innerHTML=roster8A.map((n,j)=>`<option value="${n}">${j+1}. ${n}</option>`).join('');
-   showStudent();
-   current7.textContent=`${i+1}. ${novo}`;
-   msg7.style.color='#16794b';msg7.textContent=`Nome corrigido: ${antigo} → ${novo}`;
- });
-})();
-</script>
-
-</body></html>
+</script></body></html>
