@@ -116,6 +116,7 @@ function render(a){$('answers').innerHTML=a.map((v,i)=>`<div class="ans">${i+1}<
    if(pos>=0) rows[pos]=row; else rows.push(row);
    rows.sort((a,b)=>a.no-b.no);setRows(rows);updateProgress();
    msg.className='status ok';msg.textContent=`Resultado salvo: ${i+1}. ${roster8A[i]}`;
+   renderSavedTable8C();
    let next=-1;for(let k=i+1;k<roster8A.length;k++)if(!rows.some(r=>r.no===k+1)){next=k;break}
    if(next<0)for(let k=0;k<roster8A.length;k++)if(!rows.some(r=>r.no===k+1)){next=k;break}
    if(next>=0){studentSearch.value=roster8A[next];showStudent()}else{msg.textContent+=' — turma concluida.'}
@@ -130,9 +131,37 @@ function render(a){$('answers').innerHTML=a.map((v,i)=>`<div class="ans">${i+1}<
    rows.splice(pos,1);setRows(rows);updateProgress();
    msg.className='status ok';msg.textContent=`Resultado excluído: ${i+1}. ${roster8A[i]}`;
  });
+ function renderSavedTable8C(){
+   const box=document.getElementById('savedTable8C');
+   if(!box)return;
+   const rows=getRows().sort((a,b)=>a.no-b.no);
+   document.getElementById('savedSummary8C').textContent=`${rows.length} de ${roster8A.length} corrigidos • ${roster8A.length-rows.length} faltando`;
+   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+   box.innerHTML=rows.length?rows.map(r=>`<tr>
+     <td>${r.no}</td><td style="text-align:left">${esc(roster8A[r.no-1]||r.aluno)}</td>
+     <td>${r.ef.nota}</td><td>${r.ingles.nota}</td><td>${r.portugues.nota}</td><td>${r.arte.nota}</td>
+   </tr>`).join(''):'<tr><td colspan="6">Nenhum resultado salvo.</td></tr>';
+ }
  updateProgress();
+ renderSavedTable8C();
 })();
 </script>
+<section id="savedResults8C" style="margin:18px 0;padding:18px;border:1px solid #d9dee8;border-radius:16px;background:#fff">
+  <h2 style="margin:0 0 6px;font-size:20px">Resultados da turma — 8º A</h2>
+  <div id="savedSummary8C" style="font-weight:800;margin-bottom:10px"></div>
+  <div style="overflow-x:auto;border:1px solid #e1e5ec;border-radius:10px">
+    <table style="border-collapse:collapse;width:100%;min-width:610px">
+      <thead><tr style="background:#f1f4f8">
+        <th>Nº</th><th style="text-align:left">Aluno</th><th>Ed. Física</th><th>Inglês</th><th>Português</th><th>Arte</th>
+      </tr></thead>
+      <tbody id="savedTable8C"></tbody>
+    </table>
+  </div>
+</section>
+<style>
+#savedResults8C th,#savedResults8C td{padding:9px 7px;border-bottom:1px solid #e7eaf0;text-align:center;font-size:14px}
+</style>
+
 <!-- ETAPA 7: editor isolado de nomes. Nao altera leitor, detector, gabarito, notas, salvar ou excluir. -->
 <section id="nameEditorPanel" style="margin:18px 0;padding:18px;border:1px solid #d9dee8;border-radius:16px;background:#fff">
   <button id="toggleNameEditor" type="button" style="width:100%;padding:14px;border:0;border-radius:12px;background:#eef4ff;color:#1459b8;font-weight:800;font-size:16px">Corrigir nome de aluno</button>
@@ -192,46 +221,6 @@ function render(a){$('answers').innerHTML=a.map((v,i)=>`<div class="ans">${i+1}<
    current7.textContent=`${i+1}. ${novo}`;
    msg7.style.color='#16794b';msg7.textContent=`Nome corrigido: ${antigo} → ${novo}`;
  });
-})();
-</script>
-
-
-<!-- ETAPA 8A: visualizacao simples de resultados. Leitor da ETAPA 7 permanece intacto. -->
-<section style="margin:18px 0;padding:18px;border:1px solid #d9dee8;border-radius:16px;background:#fff">
-  <h2 style="margin:0 0 8px;font-size:20px">Resultados da turma — 8º A</h2>
-  <div style="color:#5d6675;margin-bottom:10px">As notas salvas podem ser conferidas aqui sem alterar a leitura do cartão.</div>
-  <button id="showResults8a" type="button" style="width:100%;padding:14px;border:0;border-radius:12px;background:#eef4ff;color:#1459b8;font-weight:800;font-size:16px">Atualizar / ver resultados</button>
-  <div id="summary8a" style="margin:10px 0;font-weight:800"></div>
-  <div style="overflow-x:auto;border:1px solid #e1e5ec;border-radius:10px">
-    <table style="border-collapse:collapse;width:100%;min-width:620px">
-      <thead><tr style="background:#f1f4f8">
-        <th style="padding:9px">Nº</th><th style="padding:9px;text-align:left">Aluno</th>
-        <th style="padding:9px">Ed. Física</th><th style="padding:9px">Inglês</th>
-        <th style="padding:9px">Português</th><th style="padding:9px">Arte</th>
-      </tr></thead>
-      <tbody id="resultsBody8a"></tbody>
-    </table>
-  </div>
-</section>
-<script>
-(function(){
- const b=document.getElementById('showResults8a'), out=document.getElementById('resultsBody8a'), sum=document.getElementById('summary8a');
- function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
- function render(){
-   let rows=[];try{rows=JSON.parse(localStorage.getItem('leitor8A_resultados_etapa4b')||'[]')}catch(e){}
-   rows.sort((a,b)=>a.no-b.no);
-   sum.textContent=`${rows.length} de 40 corrigidos • ${40-rows.length} faltando`;
-   out.innerHTML=rows.length?rows.map(r=>`<tr style="border-top:1px solid #e7eaf0">
-     <td style="padding:9px;text-align:center">${r.no}</td>
-     <td style="padding:9px;font-weight:650">${safe(r.aluno)}</td>
-     <td style="padding:9px;text-align:center">${r.ef.nota}</td>
-     <td style="padding:9px;text-align:center">${r.ingles.nota}</td>
-     <td style="padding:9px;text-align:center">${r.portugues.nota}</td>
-     <td style="padding:9px;text-align:center">${r.arte.nota}</td></tr>`).join('')
-     :'<tr><td colspan="6" style="padding:14px;text-align:center">Nenhum resultado salvo.</td></tr>';
- }
- b.addEventListener('click',render);
- render();
 })();
 </script>
 
