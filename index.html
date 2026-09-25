@@ -4,6 +4,7 @@
   <label for="studentSearch"><b>Aluno — 8º A</b></label>
   <input id="studentSearch" list="studentOptions" placeholder="Digite as primeiras letras do nome" autocomplete="off">
   <datalist id="studentOptions"></datalist>
+  <div id="instantNames" style="display:none;margin-top:6px;border:1px solid #d8dee9;border-radius:10px;background:#fff;max-height:240px;overflow-y:auto"></div>
   <div id="selectedStudent" class="muted" style="margin-top:8px">Nenhum aluno selecionado.</div>
 </div>
 <div class="card"><h1>Leitor de Cartão-Resposta</h1><div class="muted">Base do leitor • 30 questões A/B/C/D</div><div class="viewer" id="viewer"><video id="video" autoplay playsinline></video><canvas id="canvas" class="hidden"></canvas><div class="guide" id="guide"><span>Enquadre o cartão inteiro</span></div></div><div class="actions"><button class="primary" id="camera">Abrir câmera</button><button class="secondary" id="photo">Escolher foto</button><button class="primary wide" id="read" disabled>Ler cartão</button><button class="secondary wide hidden" id="again">Nova leitura</button></div><input id="file" type="file" accept="image/*" capture="environment" class="hidden"><div id="status" class="status">Abra a câmera ou escolha uma foto.</div></div><div class="card hidden" id="result"><b>Respostas detectadas</b><div class="answers" id="answers" style="margin-top:10px"></div></div><div class="card hidden" id="scores"><b>Resultado pelo gabarito — 8º A • Arte Visuais</b><div class="muted" style="margin:4px 0 10px">Notas calculadas somente após a leitura 30/30.</div><div class="scoregrid" id="scoreGrid"></div></div><div class="card" id="savePanel"><b>Salvar resultado do aluno</b><div class="muted" style="margin:4px 0 10px">Use somente depois que aparecer 30/30 e as quatro notas.</div><button class="primary" id="saveStudent" style="width:100%">Salvar aluno e ir para o próximo</button>
@@ -22,6 +23,26 @@ function showStudent(){
 }
 studentSearch.addEventListener('input',showStudent);
 studentSearch.addEventListener('change',showStudent);
+// Lista instantanea: abre automaticamente ao digitar, sem tocar na seta.
+const instantNames=document.getElementById('instantNames');
+function instantStudentList(){
+ const q=normStudent(studentSearch.value);
+ instantNames.innerHTML='';
+ if(!q){instantNames.style.display='none';return}
+ const hits=roster8A.map((n,i)=>({n,i})).filter(x=>normStudent(x.n).startsWith(q));
+ if(!hits.length){instantNames.style.display='none';return}
+ for(const x of hits){
+   const row=document.createElement('button');
+   row.type='button';
+   row.textContent=`${x.i+1}. ${x.n}`;
+   row.style.cssText='display:block;width:100%;padding:12px;text-align:left;border:0;border-bottom:1px solid #edf0f4;background:#fff;font-weight:600';
+   row.onclick=()=>{studentSearch.value=x.n;showStudent();instantNames.style.display='none';};
+   instantNames.appendChild(row);
+ }
+ instantNames.style.display='block';
+}
+studentSearch.addEventListener('input',instantStudentList);
+
 
 
 // ETAPA 3: gabarito e notas. As ETAPAS 1 e 2 acima ficam congeladas.
