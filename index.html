@@ -12,7 +12,7 @@
 <div class="wrap">
   <div class="card top">
     <div><h1>Leitor de Cartão-Resposta</h1><div class="muted">Versão 2 • leitura do cartão inteiro • 30 questões A/B/C/D</div></div>
-    <span class="pill">8º ano • Arte Visuais</span>
+    <span class="pill">8º ano • Arte Visuais • leitor corrigido</span>
   </div>
 
   <div class="card grid">
@@ -130,18 +130,18 @@ function detectColoredMarks(){
     if(b>45 && r<190 && g<190 && blue>10 && purple>28 && (Math.max(r,g,b)-Math.min(r,g,b))>22) mask[p]=1;
   }
   const seen=new Uint8Array(w*h), comps=[], stack=[];
-  const minA=Math.max(18,Math.floor(w*h*0.000025)), maxA=Math.floor(w*h*0.012);
-  for(let y=1;y<h-1;y+=2) for(let x=1;x<w-1;x+=2){
+  const minA=Math.max(20,Math.floor(w*h*0.000018)), maxA=Math.floor(w*h*0.012);
+  for(let y=1;y<h-1;y++) for(let x=1;x<w-1;x++){
     const p=y*w+x; if(!mask[p]||seen[p]) continue;
     let n=0,sx=0,sy=0,minx=x,maxx=x,miny=y,maxy=y; stack.push(p);seen[p]=1;
     while(stack.length){
       const q=stack.pop(), qy=Math.floor(q/w), qx=q-qy*w; n++;sx+=qx;sy+=qy;
       minx=Math.min(minx,qx);maxx=Math.max(maxx,qx);miny=Math.min(miny,qy);maxy=Math.max(maxy,qy);
-      for(const [dx,dy] of [[2,0],[-2,0],[0,2],[0,-2],[2,2],[-2,-2],[2,-2],[-2,2]]){
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]){
         const nx=qx+dx,ny=qy+dy;if(nx>0&&nx<w-1&&ny>0&&ny<h-1){const np=ny*w+nx;if(mask[np]&&!seen[np]){seen[np]=1;stack.push(np)}}
       }
     }
-    const area=n*4,bw=maxx-minx,bh=maxy-miny;
+    const area=n,bw=maxx-minx,bh=maxy-miny;
     if(area>=minA&&area<=maxA&&bw>5&&bh>5&&bw<w*.10&&bh<h*.08) comps.push({x:sx/n,y:sy/n,area,bw,bh});
   }
   // Retira anotacoes externas: o cartao ocupa a regiao central e as marcas formam duas colunas de 15.
