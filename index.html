@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Leitor de Cartão-Resposta</title>
+<title>Leitor de Cartão-Resposta v4</title>
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111;background:#f5f7fb}*{box-sizing:border-box}body{margin:0}.wrap{max-width:980px;margin:0 auto;padding:16px}.card{background:white;border:1px solid #d8dee9;border-radius:16px;padding:16px;margin-bottom:14px}.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}h1{font-size:22px;margin:0}.muted{color:#5e6878;font-size:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:720px){.grid{grid-template-columns:1fr}}label{font-weight:600;font-size:14px}select,input,button{font:inherit}select,input{width:100%;padding:11px;border:1px solid #cfd6e2;border-radius:10px;background:white}button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}.primary{background:#0b66ff;color:white}.secondary{background:#eaf1ff;color:#0b4db8}.danger{background:#fff1f1;color:#9a1d1d}.actions{display:flex;gap:10px;flex-wrap:wrap}.cameraBox{position:relative;width:100%;aspect-ratio:3/4;background:#111;border-radius:16px;overflow:hidden}.cameraBox video,.cameraBox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.guide{position:absolute;left:8%;right:8%;top:23%;bottom:13%;border:3px solid rgba(0,255,115,.95);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.26);pointer-events:none}.guide:before{content:'Enquadre somente o CARTÃO-RESPOSTA dentro desta moldura';position:absolute;left:0;right:0;top:-34px;color:white;font-weight:700;text-align:center;font-size:13px;text-shadow:0 1px 2px #000}.status{padding:10px 12px;border-radius:10px;background:#f0f4f9;font-size:14px}.ok{background:#edf9f0;color:#145c2c}.warn{background:#fff7e8;color:#7a4b00}.error{background:#fff0f0;color:#8c1d1d}.results{overflow:auto}.results table{width:100%;border-collapse:collapse;min-width:680px}.results th,.results td{padding:8px;border-bottom:1px solid #e4e8ef;text-align:center}.results th:first-child,.results td:first-child{text-align:left}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#edf2f7;font-size:12px}.answerGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.answerGrid div{padding:8px;border:1px solid #e2e7ef;border-radius:8px;text-align:center;font-size:13px}.small{font-size:12px}.hidden{display:none!important}
 </style>
@@ -200,7 +200,10 @@ function detectColoredMarks(){
       let k=0,bd=Infinity,second=Infinity;
       centers.forEach((c,j)=>{const z=Math.abs(p.x-c);if(z<bd){second=bd;bd=z;k=j}else if(z<second)second=z});
       ans.push(letters[k]);
-      if(bd>step*.42 || (second-bd)<step*.18 || groups[i].pts.length>2) unc.push(i+offset);
+      // Conferencia apenas quando a marca fica realmente perto da fronteira entre duas alternativas.
+      // Fragmentos extras da mesma tinta nao geram alerta sozinhos, pois uma bolinha preenchida
+      // a caneta frequentemente aparece como 2-3 componentes.
+      if(bd>step*.46 || (second-bd)<step*.12) unc.push(i+offset);
     });
     return {ans,unc};
   }
