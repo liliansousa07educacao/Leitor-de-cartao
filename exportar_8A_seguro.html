@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Exportar Resultados 8º A</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#172033}
+.wrap{max-width:760px;margin:auto;padding:16px}
+.card{background:#fff;border:1px solid #dbe2ec;border-radius:16px;padding:18px;margin-bottom:14px}
+h1{font-size:22px;margin:0 0 8px}
+.muted{color:#667085;font-size:14px;line-height:1.4}
+.status{padding:14px;border-radius:12px;background:#eef2f7;font-size:15px;margin-top:12px}
+.ok{background:#eaf8ee;color:#166534}.warn{background:#fff6df;color:#805500}
+button{width:100%;border:0;border-radius:12px;padding:14px 12px;font:inherit;font-weight:800;background:#1265e8;color:#fff;margin-top:12px}
+button:disabled{opacity:.45}
+.small{font-size:12px;word-break:break-all;margin-top:10px;color:#667085}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Exportar resultados — 8º A</h1>
+    <div class="muted">Esta página apenas lê os resultados já salvos no navegador. Ela não apaga, não altera e não recalcula nenhuma nota.</div>
+    <div id="status" class="status">Verificando resultados salvos...</div>
+    <button id="exportBtn" type="button" disabled>Exportar resultados</button>
+    <div id="details" class="small"></div>
+  </div>
+</div>
+<script>
+(function(){
+  const STORE='leitor8A_resultados_etapa4b';
+  const status=document.getElementById('status');
+  const btn=document.getElementById('exportBtn');
+  const details=document.getElementById('details');
+
+  function getRows(){
+    try{
+      const raw=localStorage.getItem(STORE);
+      if(!raw) return [];
+      const parsed=JSON.parse(raw);
+      return Array.isArray(parsed)?parsed:[];
+    }catch(e){ return []; }
+  }
+
+  function csvCell(v){
+    const s=String(v==null?'':v);
+    return '"'+s.replace(/"/g,'""')+'"';
+  }
+
+  function inspect(){
+    const rows=getRows().slice().sort((a,b)=>(a.no||0)-(b.no||0));
+    const keys=[];
+    try{ for(let i=0;i<localStorage.length;i++) keys.push(localStorage.key(i)); }catch(e){}
+    details.textContent='Origem: '+location.origin+' | Chave procurada: '+STORE+' | Chaves encontradas: '+(keys.length?keys.join(', '):'nenhuma');
+    if(rows.length){
+      status.className='status ok';
+      status.textContent='Encontrados '+rows.length+' resultados salvos. Você pode exportar com segurança.';
+      btn.disabled=false;
+    }else{
+      status.className='status warn';
+      status.textContent='Nenhum resultado foi encontrado nesta página. NÃO mexa no leitor original. Abra esta página no mesmo Safari e pelo mesmo domínio do leitor.';
+      btn.disabled=true;
+    }
+    return rows;
+  }
+
+  btn.addEventListener('click',function(){
+    const rows=inspect();
+    if(!rows.length) return;
+    const header=[
+      'Nº','Aluno',
+      'Educação Física - Pontos','Educação Física - Nota',
+      'Língua Inglesa - Pontos','Língua Inglesa - Nota',
+      'Língua Portuguesa - Pontos','Língua Portuguesa - Nota',
+      'Arte (Visuais) - Pontos','Arte (Visuais) - Nota'
+    ];
+    const lines=[header.map(csvCell).join(';')];
+    rows.forEach(r=>{
+      const vals=[
+        r.no||'', r.aluno||'',
+        r.ef ? r.ef.acertos+'/'+r.ef.total : '', r.ef ? r.ef.nota : '',
+        r.ingles ? r.ingles.acertos+'/'+r.ingles.total : '', r.ingles ? r.ingles.nota : '',
+        r.portugues ? r.portugues.acertos+'/'+r.portugues.total : '', r.portugues ? r.portugues.nota : '',
+        r.arte ? r.arte.acertos+'/'+r.arte.total : '', r.arte ? r.arte.nota : ''
+      ];
+      lines.push(vals.map(csvCell).join(';'));
+    });
+    const csv='\uFEFF'+lines.join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='Resultados_8A.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    status.className='status ok';
+    status.textContent='Arquivo Resultados_8A.csv criado com '+rows.length+' alunos. Os dados originais continuam no navegador.';
+  });
+
+  inspect();
+})();
+</script>
+</body>
+</html>
