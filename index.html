@@ -116,46 +116,97 @@ function processWholePhoto(){
     setStatus(`Cartão inteiro reconhecido: <b>30/30 respostas</b>. ${state.uncertain.size?'<b>'+state.uncertain.size+'</b> questão(ões) para conferir.':'Pronto para conferir e salvar.'}`,'ok');
     return;
   }
-  setStatus('Não consegui localizar automaticamente as 30 marcações coloridas. Vou tentar a leitura por posição; confira as questões destacadas.','warn');
-  processCard();
+  setStatus('Não consegui localizar as 30 marcações com segurança. Tire outra foto mais reta e nítida; nenhuma nota foi calculada.','warn');
+  state.answers=[]; state.uncertain.clear(); $('readingCard').classList.add('hidden'); $('scoreCard').classList.add('hidden'); return;
 }
 function detectColoredMarks(){
   const ctx=canvas.getContext('2d'), w=canvas.width,h=canvas.height, im=ctx.getImageData(0,0,w,h), d=im.data;
-  // máscara de pixels com tinta azul/roxa: azul dominante e saturação suficiente
+  // Detecta a tinta azul/roxa da caneta. A leitura usa a POSICAO REAL das 30 marcas,
+  // e nao coordenadas fixas da foto. Isso corrige escala, deslocamento e pequena inclinacao.
   const mask=new Uint8Array(w*h);
-  for(let i=0,p=0;i<d.length;i+=4,p++){
-    const r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
-    const sat=mx-mn;
-    if(sat>28 && b>r*1.03 && b>g*1.03 && mx<205) mask[p]=1;
+  for(let p=0,i=0;p<w*h;p++,i+=4){
+    const r=d[i],g=d[i+1],b=d[i+2];
+    const blue=b-Math.max(r,g), purple=(b+ r*.25)-g;
+    if(b>45 && r<190 && g<190 && blue>10 && purple>28 && (Math.max(r,g,b)-Math.min(r,g,b))>22) mask[p]=1;
   }
-  // componentes conexos, reduzidos para desempenho
   const seen=new Uint8Array(w*h), comps=[], stack=[];
-  const minA=Math.max(35,Math.floor(w*h*0.00010)), maxA=Math.floor(w*h*0.004);
-  for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){let p=y*w+x;if(!mask[p]||seen[p])continue;
-    let area=0,sx=0,sy=0,minx=x,maxx=x,miny=y,maxy=y;stack.push(p);seen[p]=1;
-    while(stack.length){const q=stack.pop(),qy=Math.floor(q/w),qx=q-qy*w;area++;sx+=qx;sy+=qy;minx=Math.min(minx,qx);maxx=Math.max(maxx,qx);miny=Math.min(miny,qy);maxy=Math.max(maxy,qy);
-      for(const [dx,dy] of [[2,0],[-2,0],[0,2],[0,-2]]){const nx=qx+dx,ny=qy+dy;if(nx>=0&&nx<w&&ny>=0&&ny<h){const np=ny*w+nx;if(mask[np]&&!seen[np]){seen[np]=1;stack.push(np)}}}
+  const minA=Math.max(18,Math.floor(w*h*0.000025)), maxA=Math.floor(w*h*0.012);
+  for(let y=1;y<h-1;y+=2) for(let x=1;x<w-1;x+=2){
+    const p=y*w+x; if(!mask[p]||seen[p]) continue;
+    let n=0,sx=0,sy=0,minx=x,maxx=x,miny=y,maxy=y; stack.push(p);seen[p]=1;
+    while(stack.length){
+      const q=stack.pop(), qy=Math.floor(q/w), qx=q-qy*w; n++;sx+=qx;sy+=qy;
+      minx=Math.min(minx,qx);maxx=Math.max(maxx,qx);miny=Math.min(miny,qy);maxy=Math.max(maxy,qy);
+      for(const [dx,dy] of [[2,0],[-2,0],[0,2],[0,-2],[2,2],[-2,-2],[2,-2],[-2,2]]){
+        const nx=qx+dx,ny=qy+dy;if(nx>0&&nx<w-1&&ny>0&&ny<h-1){const np=ny*w+nx;if(mask[np]&&!seen[np]){seen[np]=1;stack.push(np)}}
+      }
     }
-    area*=4; if(area>=minA&&area<=maxA&&(maxx-minx)>8&&(maxy-miny)>8) comps.push({x:sx/(area/4),y:sy/(area/4),area});
+    const area=n*4,bw=maxx-minx,bh=maxy-miny;
+    if(area>=minA&&area<=maxA&&bw>5&&bh>5&&bw<w*.10&&bh<h*.08) comps.push({x:sx/n,y:sy/n,area,bw,bh});
   }
-  if(comps.length<25)return null;
-  // Mantém região central onde está o cartão e agrupa 15 linhas por cada metade.
-  let pts=comps.filter(c=>c.y>h*.20&&c.y<h*.86&&c.x>w*.10&&c.x<w*.90);
-  if(pts.length<25)return null;
-  const mid=w*.5,left=pts.filter(c=>c.x<mid),right=pts.filter(c=>c.x>=mid);
-  function rows(side){side.sort((a,b)=>a.y-b.y); const groups=[]; for(const p of side){let g=groups.find(z=>Math.abs(z.y-p.y)<h*.018);if(!g){g={y:p.y,pts:[]};groups.push(g)}g.pts.push(p);g.y=g.pts.reduce((s,q)=>s+q.y,0)/g.pts.length}return groups.filter(g=>g.pts.length).sort((a,b)=>a.y-b.y).slice(0,15)}
-  const L=rows(left),R=rows(right); if(L.length!==15||R.length!==15)return null;
-  function decode(groups,isRight){
-    const all=groups.flatMap(g=>g.pts), xs=all.map(p=>p.x).sort((a,b)=>a-b);
-    // estimate four printed answer-column centers from marked points by k-means in x
-    let centers=isRight?[.60,.68,.76,.84]:[.18,.25,.32,.39]; centers=centers.map(v=>v*w);
-    for(let it=0;it<12;it++){const buckets=centers.map(()=>[]);for(const p of all){let k=0,bd=1e9;centers.forEach((c,i)=>{const z=Math.abs(p.x-c);if(z<bd){bd=z;k=i}});buckets[k].push(p.x)}centers=centers.map((c,i)=>buckets[i].length?buckets[i].reduce((a,b)=>a+b,0)/buckets[i].length:c).sort((a,b)=>a-b)}
-    const letters='ABCD',ans=[],unc=[];
-    groups.forEach((g,ri)=>{let p=g.pts.sort((a,b)=>b.area-a.area)[0];let k=0,bd=1e9;centers.forEach((c,i)=>{let z=Math.abs(p.x-c);if(z<bd){bd=z;k=i}});ans.push(letters[k]);if(g.pts.length>1||bd>w*.035)unc.push(ri)});return {ans,unc};
-  }
-  const a=decode(L,false),b=decode(R,true);return {answers:[...a.ans,...b.ans],uncertain:[...a.unc,...b.unc.map(i=>i+15)]};
-}
+  // Retira anotacoes externas: o cartao ocupa a regiao central e as marcas formam duas colunas de 15.
+  let pts=comps.filter(c=>c.y>h*.08&&c.y<h*.94&&c.x>w*.05&&c.x<w*.95);
+  if(pts.length<24) return null;
 
+  // Encontra a maior separacao horizontal: ela separa as questoes 1-15 das 16-30.
+  const xs=pts.map(p=>p.x).sort((a,b)=>a-b); let gap=-1,cut=w*.5;
+  for(let i=0;i<xs.length-1;i++){const g=xs[i+1]-xs[i]; if(g>gap){gap=g;cut=(xs[i+1]+xs[i])/2}}
+  let left=pts.filter(p=>p.x<cut), right=pts.filter(p=>p.x>=cut);
+
+  function pick15(side){
+    side=side.slice().sort((a,b)=>a.y-b.y);
+    // agrupa fragmentos da mesma bolinha/linha
+    const groups=[];
+    for(const p of side){
+      let g=groups.find(z=>Math.abs(z.y-p.y)<h*.014);
+      if(!g){g={y:p.y,pts:[]};groups.push(g)}
+      g.pts.push(p); g.y=g.pts.reduce((s,q)=>s+q.y,0)/g.pts.length;
+    }
+    // se houver ruido, escolhe a sequencia de 15 linhas com espacamento mais regular
+    groups.sort((a,b)=>a.y-b.y);
+    if(groups.length<15) return [];
+    if(groups.length===15) return groups;
+    let best=null,bscore=1e99;
+    for(let i=0;i<=groups.length-15;i++){
+      const a=groups.slice(i,i+15), ds=[];for(let j=1;j<a.length;j++)ds.push(a[j].y-a[j-1].y);
+      const m=ds.reduce((s,v)=>s+v,0)/ds.length, score=ds.reduce((s,v)=>s+(v-m)*(v-m),0)/ds.length;
+      if(score<bscore){bscore=score;best=a}
+    }
+    return best||[];
+  }
+  const L=pick15(left),R=pick15(right); if(L.length!==15||R.length!==15)return null;
+
+  function decode(groups,offset){
+    // Uma marca por linha. Usa o centroide azul de maior area na linha.
+    const marks=groups.map(g=>g.pts.slice().sort((a,b)=>b.area-a.area)[0]);
+    const mx=marks.map(p=>p.x);
+    // Ajusta quatro colunas A-D por k-means 1D usando os x REAIS das marcas.
+    const lo=Math.min(...mx),hi=Math.max(...mx), span=Math.max(1,hi-lo);
+    let centers=[lo,lo+span/3,lo+2*span/3,hi];
+    for(let it=0;it<30;it++){
+      const buckets=[[],[],[],[]];
+      for(const x of mx){let k=0,bd=Infinity;for(let j=0;j<4;j++){const z=Math.abs(x-centers[j]);if(z<bd){bd=z;k=j}}buckets[k].push(x)}
+      // Se uma coluna nao apareceu nesta prova, preserva a progressao regular.
+      const next=centers.slice(); for(let j=0;j<4;j++) if(buckets[j].length) next[j]=buckets[j].reduce((a,b)=>a+b,0)/buckets[j].length;
+      centers=next.sort((a,b)=>a-b);
+    }
+    // regulariza o passo entre colunas para impedir que varias respostas caiam em A
+    const dif=[centers[1]-centers[0],centers[2]-centers[1],centers[3]-centers[2]].filter(v=>v>span*.08).sort((a,b)=>a-b);
+    const step=dif.length?dif[Math.floor(dif.length/2)]:span/3;
+    const base=centers.reduce((s,c,i)=>s+(c-i*step),0)/4;
+    centers=[0,1,2,3].map(i=>base+i*step);
+    const letters='ABCD',ans=[],unc=[];
+    marks.forEach((p,i)=>{
+      let k=0,bd=Infinity,second=Infinity;
+      centers.forEach((c,j)=>{const z=Math.abs(p.x-c);if(z<bd){second=bd;bd=z;k=j}else if(z<second)second=z});
+      ans.push(letters[k]);
+      if(bd>step*.42 || (second-bd)<step*.18 || groups[i].pts.length>2) unc.push(i+offset);
+    });
+    return {ans,unc};
+  }
+  const a=decode(L,0),b=decode(R,15);
+  return {answers:[...a.ans,...b.ans],uncertain:[...a.unc,...b.unc]};
+}
 // Geometry calibrated for the standard 30-question sheet: two 15-row blocks, A-D across each row.
 // Because the user aligns the response card inside the guide, coordinates can be normalized.
 function bubbleCenters(w,h){
