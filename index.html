@@ -2,9 +2,8 @@
 *{box-sizing:border-box}body{margin:0;background:#f4f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#172033}.wrap{max-width:760px;margin:auto;padding:12px}.card{background:#fff;border:1px solid #dbe2ec;border-radius:16px;padding:14px;margin-bottom:12px}h1{font-size:21px;margin:0 0 4px}.muted{color:#667085;font-size:13px}.viewer{position:relative;width:100%;height:min(68vh,680px);min-height:430px;background:#111;border-radius:14px;overflow:hidden;margin:12px 0}.viewer video,.viewer canvas{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}.guide{position:absolute;left:5%;right:5%;top:8%;bottom:8%;border:3px solid #00e676;border-radius:10px;pointer-events:none}.guide span{position:absolute;top:-30px;left:0;right:0;color:#fff;text-align:center;font-weight:700;text-shadow:0 1px 3px #000;font-size:13px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.actions .wide{grid-column:1/-1}button{border:0;border-radius:12px;padding:13px 10px;font:inherit;font-weight:750}.primary{background:#1265e8;color:#fff}.secondary{background:#e8f0ff;color:#184f9f}.status{padding:11px;border-radius:10px;background:#eef2f7;font-size:14px;margin-top:10px}.ok{background:#eaf8ee;color:#166534}.warn{background:#fff6df;color:#805500}.answers{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.ans{border:1px solid #dde4ee;border-radius:9px;padding:8px 4px;text-align:center;font-size:13px}.ans b{font-size:15px}.scoregrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.scorebox{border:1px solid #dde4ee;border-radius:12px;padding:11px}.scorebox b{display:block;font-size:15px}.scorebox .note{font-size:22px;font-weight:800;margin-top:3px}.hidden{display:none!important}@media(max-width:480px){.wrap{padding:8px}.scoregrid{grid-template-columns:1fr 1fr}.viewer{height:64vh;min-height:390px}.answers{grid-template-columns:repeat(5,1fr)}}
 </style></head><body><div class="wrap"><div class="card">
   <label for="studentSearch"><b>Aluno — 8º A</b></label>
-  <input id="studentSearch" list="studentOptions" placeholder="Digite as primeiras letras do nome" autocomplete="off">
-  <datalist id="studentOptions"></datalist>
-  <div id="instantNames" style="display:none;margin-top:6px;border:1px solid #d8dee9;border-radius:10px;background:#fff;max-height:240px;overflow-y:auto"></div>
+  <input id="studentSearch" placeholder="Digite as primeiras letras do nome" autocomplete="off">
+  <datalist id="studentOptions"></datalist><div id="liveStudentList" style="display:none;margin-top:6px;border:1px solid #cfd6e2;border-radius:10px;background:#fff;max-height:260px;overflow-y:auto;box-shadow:0 6px 18px rgba(0,0,0,.12)"></div>
   <div id="selectedStudent" class="muted" style="margin-top:8px">Nenhum aluno selecionado.</div>
 </div>
 <div class="card"><h1>Leitor de Cartão-Resposta</h1><div class="muted">Base do leitor • 30 questões A/B/C/D</div><div class="viewer" id="viewer"><video id="video" autoplay playsinline></video><canvas id="canvas" class="hidden"></canvas><div class="guide" id="guide"><span>Enquadre o cartão inteiro</span></div></div><div class="actions"><button class="primary" id="camera">Abrir câmera</button><button class="secondary" id="photo">Escolher foto</button><button class="primary wide" id="read" disabled>Ler cartão</button><button class="secondary wide hidden" id="again">Nova leitura</button></div><input id="file" type="file" accept="image/*" capture="environment" class="hidden"><div id="status" class="status">Abra a câmera ou escolha uma foto.</div></div><div class="card hidden" id="result"><b>Respostas detectadas</b><div class="answers" id="answers" style="margin-top:10px"></div></div><div class="card hidden" id="scores"><b>Resultado pelo gabarito — 8º A • Arte Visuais</b><div class="muted" style="margin:4px 0 10px">Notas calculadas somente após a leitura 30/30.</div><div class="scoregrid" id="scoreGrid"></div></div><div class="card" id="savePanel"><b>Salvar resultado do aluno</b><div class="muted" style="margin:4px 0 10px">Use somente depois que aparecer 30/30 e as quatro notas.</div><button class="primary" id="saveStudent" style="width:100%">Salvar aluno e ir para o próximo</button>
@@ -23,25 +22,32 @@ function showStudent(){
 }
 studentSearch.addEventListener('input',showStudent);
 studentSearch.addEventListener('change',showStudent);
-// Lista instantanea: abre automaticamente ao digitar, sem tocar na seta.
-const instantNames=document.getElementById('instantNames');
-function instantStudentList(){
- const q=normStudent(studentSearch.value);
- instantNames.innerHTML='';
- if(!q){instantNames.style.display='none';return}
- const hits=roster8A.map((n,i)=>({n,i})).filter(x=>normStudent(x.n).startsWith(q));
- if(!hits.length){instantNames.style.display='none';return}
- for(const x of hits){
-   const row=document.createElement('button');
-   row.type='button';
-   row.textContent=`${x.i+1}. ${x.n}`;
-   row.style.cssText='display:block;width:100%;padding:12px;text-align:left;border:0;border-bottom:1px solid #edf0f4;background:#fff;font-weight:600';
-   row.onclick=()=>{studentSearch.value=x.n;showStudent();instantNames.style.display='none';};
-   instantNames.appendChild(row);
- }
- instantNames.style.display='block';
+// ETAPA 6C: lista visual propria; abre automaticamente ao digitar.
+// Nao altera camera, detector, gabarito, notas, salvar ou excluir.
+const liveStudentList=document.getElementById('liveStudentList');
+function refreshLiveStudentList(){
+  const q=normStudent(studentSearch.value);
+  liveStudentList.innerHTML='';
+  if(!q){liveStudentList.style.display='none';return;}
+  const hits=roster8A.map((n,i)=>({n,i})).filter(x=>normStudent(x.n).startsWith(q));
+  if(!hits.length){liveStudentList.style.display='none';return;}
+  hits.forEach(x=>{
+    const row=document.createElement('div');
+    row.textContent=`${x.i+1}. ${x.n}`;
+    row.style.cssText='padding:13px 12px;border-bottom:1px solid #edf0f4;font-weight:650;cursor:pointer;-webkit-tap-highlight-color:transparent';
+    row.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      studentSearch.value=x.n;
+      showStudent();
+      liveStudentList.style.display='none';
+      studentSearch.blur();
+    });
+    liveStudentList.appendChild(row);
+  });
+  liveStudentList.style.display='block';
 }
-studentSearch.addEventListener('input',instantStudentList);
+studentSearch.addEventListener('input',refreshLiveStudentList);
+studentSearch.addEventListener('keyup',refreshLiveStudentList);
 
 
 
