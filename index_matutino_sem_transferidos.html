@@ -1,0 +1,223 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Leitor de Cartão</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#172033}.wrap{max-width:760px;margin:auto;padding:12px}.card{background:#fff;border:1px solid #dbe2ec;border-radius:16px;padding:14px;margin-bottom:12px}h1{font-size:21px;margin:0 0 4px}.muted{color:#667085;font-size:13px}.viewer{position:relative;width:100%;height:min(68vh,680px);min-height:430px;background:#111;border-radius:14px;overflow:hidden;margin:12px 0}.viewer video,.viewer canvas{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}.guide{position:absolute;left:5%;right:5%;top:8%;bottom:8%;border:3px solid #00e676;border-radius:10px;pointer-events:none}.guide span{position:absolute;top:-30px;left:0;right:0;color:#fff;text-align:center;font-weight:700;text-shadow:0 1px 3px #000;font-size:13px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.actions .wide{grid-column:1/-1}button{border:0;border-radius:12px;padding:13px 10px;font:inherit;font-weight:750}.primary{background:#1265e8;color:#fff}.secondary{background:#e8f0ff;color:#184f9f}.status{padding:11px;border-radius:10px;background:#eef2f7;font-size:14px;margin-top:10px}.ok{background:#eaf8ee;color:#166534}.warn{background:#fff6df;color:#805500}.answers{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.ans{border:1px solid #dde4ee;border-radius:9px;padding:8px 4px;text-align:center;font-size:13px}.ans b{font-size:15px}.scoregrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.scorebox{border:1px solid #dde4ee;border-radius:12px;padding:11px}.scorebox b{display:block;font-size:15px}.scorebox .note{font-size:22px;font-weight:800;margin-top:3px}.hidden{display:none!important}@media(max-width:480px){.wrap{padding:8px}.scoregrid{grid-template-columns:1fr 1fr}.viewer{height:64vh;min-height:390px}.answers{grid-template-columns:repeat(5,1fr)}}
+</style></head><body><div class="wrap">
+<div class="card"><label for="className"><b>Turma</b></label><select id="className" style="width:100%;padding:13px;border:1px solid #cfd6e2;border-radius:10px;font-size:16px"><option value="6A">6º A</option><option value="7A">7º A</option><option value="7B">7º B</option><option value="8A" selected>8º A</option><option value="8B">8º B</option><option value="9A">9º A</option><option value="9B">9º B</option></select></div>
+<div class="card"><label for="studentSearch"><b id="studentLabel">Aluno</b></label><input id="studentSearch" list="studentOptions" placeholder="Digite as primeiras letras do nome" autocomplete="off" style="width:100%;padding:12px;border:1px solid #cfd6e2;border-radius:10px;font-size:16px"><datalist id="studentOptions"></datalist><div id="liveStudentList" style="display:none;margin-top:6px;border:1px solid #cfd6e2;border-radius:10px;background:#fff;max-height:260px;overflow-y:auto;box-shadow:0 6px 18px rgba(0,0,0,.12)"></div><div id="selectedStudent" class="muted" style="margin-top:8px">Nenhum aluno selecionado.</div></div>
+<div class="card"><h1>Leitor de Cartão-Resposta</h1><div class="muted">Base do leitor • 30 questões A/B/C/D</div><div class="viewer" id="viewer"><video id="video" autoplay playsinline></video><canvas id="canvas" class="hidden"></canvas><div class="guide" id="guide"><span>Enquadre o cartão inteiro</span></div></div><div class="actions"><button class="primary" id="camera">Abrir câmera</button><button class="secondary" id="photo">Escolher foto</button><button class="primary wide" id="read" disabled>Ler cartão</button><button class="secondary wide hidden" id="again">Nova leitura</button></div><input id="file" type="file" accept="image/*" capture="environment" class="hidden"><div id="status" class="status">Abra a câmera ou escolha uma foto.</div></div>
+<div class="card hidden" id="result"><b>Respostas detectadas</b><div class="answers" id="answers" style="margin-top:10px"></div></div>
+<div class="card hidden" id="scores"><b id="scoreTitle">Resultado pelo gabarito — 8º A • Arte Visuais</b><div class="muted" style="margin:4px 0 10px">Notas calculadas somente após a leitura 30/30.</div><div class="scoregrid" id="scoreGrid"></div></div>
+<div class="card" id="savePanel"><b>Salvar resultado do aluno</b><div class="muted" style="margin:4px 0 10px">Use somente depois que aparecer 30/30 e as quatro notas.</div><button class="primary" id="saveStudent" style="width:100%">Salvar aluno e ir para o próximo</button><button id="deleteStudent" style="width:100%;margin-top:8px;background:#fff1f1;color:#9a1d1d">Excluir resultado deste aluno</button><div id="saveMsg" class="status" style="margin-top:10px">Nenhum resultado salvo nesta etapa.</div><div class="muted" id="classProgress" style="margin-top:8px"></div></div>
+</div><script>
+const TURMAS={"6A": [[1, "ALEJANDRO SANTOS TELES BENVINDO"], [2, "ALERRANDRO RAFAEL PANTOJA ALVES"], [3, "ANA BEATRIZ LIMA DE SOUZA"], [4, "ANTHONY PEREIRA FARIAS NASCIMENTO"], [5, "BRYAN DE PADUA CABRAL"], [6, "DAVI LUCAS CARDOSO PEREIRA"], [7, "EDUARDO SANTOS BATISTA DA CRUZ"], [8, "ENZO GABRIEL ALVES FALCÃO"], [10, "FELIPE FERREIRA DE ALENCAR"], [11, "JULIANA ALVES DA SILVA MARQUES"], [12, "LARA MIRELLE LIMA DOS REIS"], [13, "LARA SOPHIA GONÇALVES MAGALHÃES"], [14, "LAURA SOUSA ARAÚJO MIRANDA"], [15, "LEVINO MARINHO DE ARAÚJO NETO"], [16, "LUCAS ALBANO DA SILVA"], [17, "LUIZ FERNANDO DA SILVA DUTRA"], [18, "LUIZ GUSTAVO MENDES PAIXÃO SOUZA"], [19, "MARIAH LUIZA BARBOSA DA SILVA CHARLES"], [20, "MARIANA DIAS CABRAL"], [21, "MIGUEL BORGES MELLO"], [22, "PEDRO NEVES RIBEIRO DO VALE"], [23, "PHILIPPE DE PADUA CABRAL"], [24, "SAMUEL WESLEY DE LIMA SILVA"], [25, "SOPHIA LEMES DE OLIVEIRA MELO — TRANSF."], [26, "RAFAEL CAETANO GEA MARTINS"]], "7A": [[1, "ALICE SOUZA RODRIGUES"], [2, "ALICIA GONZAGA FERREIRA"], [3, "ALICIA VITORIA MACHADO DE OLIVEIRA"], [4, "ANA BEATRIZ COSTA GASTRO"], [5, "ANA JULIA DE SOUZA LIMA"], [6, "ANA LUIZA CONCEIÇÃO DE SOUSA"], [7, "BRENDA RODRIGUES PAIVA GONÇALVES"], [8, "CARLOS EDUARDO DE SOUSA GUEDES"], [9, "DAIANJELIS JOSE ASTUDILLO ESPINOZA"], [10, "DANIEL QUEIROZ DE FREITAS"], [11, "DANIELLA DE PAULA PINHEIRO VASCONCELO"], [12, "DAVI ALVES SANTANA"], [13, "DAVI LUCAS DA SILVA CUNHA"], [14, "DEMID ALVES SANTANA"], [15, "DYONATHAN MICHAEL DE OLIVEIRA FILHO"], [16, "ESTER MARIANY GOMES VIEIRA — REMOV 7C"], [17, "GABRIEL NUNES CARVALHO DE SOUZA"], [18, "GEOVANA RAMOS DA COSTA"], [19, "ISABELA BIANCA PEREIRA MONTEIRO"], [20, "ISABELA CRISTINA SOUZA NASCIMENTO"], [21, "ISABELLA OLIVEIRA SILVA"], [22, "JORDANNA MENDES FIGUEREDO"], [23, "KAUÃ VITOR GONÇALVES"], [24, "KAUAN MARCIO SANTOS TEIXEIRA"], [25, "LAVINIA OLIVEIRA DOS REIS NEVES — TRANSF."], [26, "LAYSA VICTÓRIA SILVA BATISTA DOS SANTOS"], [27, "LIZZIE MIRELLA RODRIGUES SILVA"], [28, "LUCAS CUNHA BARBOSA"], [29, "MARIA ANTÔNIA SOARES MENDES — TRANSF."], [30, "MARIA EDUARDA LIMA NUNES NASCIMENTO"], [31, "PAULO VICKTOR NOLETA DA SILVA"], [32, "RAYLSON FERREIRA DA SILVA"], [33, "REBEKA SILVA DA ROCHA"], [34, "RYAN VINICIUS LIMA MUNIZ"], [35, "SOPHIA SOUSA FERREIRA"], [36, "VINICIUS LEITE ACIAR"], [37, "YASMIM DIAS GODOI RAMALHO"]], "7B": [[1, "ALANNA VITHÓRIA MARQUES MACHIELLI"], [2, "ALFREDO JR QUISPE LUNA"], [3, "ANA LAURA DOS REIS SOUZA"], [4, "ANTONIO WEVERSON BORGES MORAES"], [5, "BÁRBARA GOMES VIRGINIO SILVA SOUSA"], [6, "BRENDON LUCAS SOUSA COSTA"], [7, "DAVI HENRIQUE DIAS BORGES"], [8, "DAVI RIBEIRO PEREIRA"], [9, "DIOGO PIRES DE ALENCAR"], [10, "ENZO DANYEL NASCIMENTO LUZ — TRANSF."], [11, "ENZO VICTOR VIEIRA SANTOS"], [12, "FILIPE DUARTE RIBEIRO"], [13, "GABRIEL RODRIGUES DE AZEVEDO"], [14, "GABRIEL SANTOS BATISTA DA CRUZ"], [15, "GLEISON CARDOSO DOS SANTOS JUNIOR"], [16, "HÉLIO SOARES DE SOUZA JUNIOR"], [17, "ISABELLY VITÓRIA MARQUES NUNES — TRANSF."], [18, "JÚLIA DIAS MENDES CAVALCANTE"], [19, "KATRYNE RODRIGUES SILVESTRE"], [20, "KAUÃ GABRIEL PEREIRA FONTINEL"], [21, "MARCOS MAGALHÃES DE FARIAS"], [22, "MARIA CECÍLIA SOARES MENDES — TRANSF."], [23, "MARIA EDUARDA RIBEIRO SIQUEIRA — TRANSF."], [24, "MARIA HELENA BORGES SILVA"], [25, "MATHEUS RIBEIRO DIAS"], [26, "MIGUEL HENRIQUE BARBOSA DE MELLO"], [27, "NATASHA VICTÓRYA ALVES BARBOSA"], [28, "NATHALY LOPES SILVA"], [29, "NICOLY INGRID DA SILVA NOGUEIRA"], [30, "RAPHAEL CHAVES CARVALHO"], [31, "SARA QUEZIA FERREIRA SANTOS — TRANSF."], [32, "VICTOR ENZO MORAES DE SOUSA — TRANSF."], [33, "WESLEY ANTONIO MOREIRA GALENO"], [34, "WEVYLLA VICTORIA DIVINO PARDIM — TRANSF."], [35, "YAN FELLIPPE OLIVEIRA SANTOS"], [36, "YARA XAVIER"], [37, "YASMIN KÁRLLA BARREIRA SILVA"], [38, "YASMIN VASCONCELLOS VIEIRA DE AZEVEDO"], [39, "YVALLO SILVA DA COSTA"]], "8A": [[1, "ADRIAN RAFAEL PANTOJA ALVES"], [2, "ALYSSON GABRIEL FERREIRA"], [3, "ANNA CLARA MARTINS MONTALVÃO"], [4, "ANNA JULIA BEZERRA LOPIS"], [5, "CARLOS EDUARDO LOPES SANTOS"], [6, "DAVI ALVES BISPO"], [7, "DAVI DE SOUZA LIMA"], [8, "DAVI PACHECO GONÇALVES"], [9, "EDUARDA ARAÚJO BEZERRA"], [10, "EDUARDO GONZAGA FERREIRA"], [11, "EDUARDO PINHEIRO PONTES"], [12, "ELIZABETH VITÓRIA SOARES DOS SANTOS"], [13, "GABRIEL MACEDO DA SILVA"], [14, "GERINDAVI GOMES DE SOUSA"], [15, "GUSTAVO NOGUEIRA FREIRE"], [16, "HAILLEANDRO BATISTA DOS SANTOS"], [17, "HEITOR GONÇALVES INÁCIO"], [18, "ISADORA COSTA RIBEIRO"], [19, "JOÃO VITOR ALVES BORGES"], [20, "JOHN CABRAL GUIMARÃES"], [21, "JORDAN PACHECO MOTA"], [22, "JULHIA RODRIGUES PEREIRA"], [23, "LAURA NUNES BATISTA"], [24, "LUCAS GABRIEL SILVA DE SOUSA"], [25, "MARCOS KAUÃ RIBEIRO LISBOA"], [26, "MARIA CLARA ALVES BORGES SILVA"], [27, "MARYANA SOPHIA VASCONCELOS VIEIRA"], [28, "MATEUS GABRIEL INÁCIO ALVES"], [29, "MATHEUS OLIVEIRA MONTALVÃO"], [30, "MILO EDWARD QUISPE DORI"], [31, "NICOLAS DOURADO MACHADO"], [32, "PEDRO ELEUTERIO DE OLIVEIRA"], [33, "RAFAEL GOMES C. DE SOUSA"], [34, "RAFAEL SOLDAGA GUIRRA SCALZITTI"], [35, "ROBERTA SILVA MARQUES"], [36, "SOPHIA DE FREITAS CABRAL"], [37, "SUELLEN CRISTINA SANTOS SILVA"], [38, "VICTOR MIGUEL SIMÕES"], [39, "TALLYTA MAURIZ SOUZA"], [40, "MIGUEL JOSÉ RIBEIRO SANTOS"]], "8B": [[1, "CALEBE HENRIQUE SILVA DOS REIS"], [2, "CECILYA VITORIA GONÇALVES"], [3, "DAVI LUCAS SILVA RODRIGUES"], [4, "EDUARDO MENDES DAMACENO"], [5, "ELYVELTON GUSTAVO MARTINS DE OLIVEIRA"], [6, "FELIPE VIEIRA DOS SANTOS"], [7, "GUSTAVO HENRIQUE COELHO NASCIMENTO"], [8, "HELLEN VITORIA ALVES BASTO"], [9, "JHENNYFE MUNIZ NUNES"], [10, "JULIA DE OLIVEIRA AVELINO"], [11, "KALERY PEREIRA DUTRA SILVA"], [12, "KARLOS EDUARDO DIAS MILHOMEM — REM 8D"], [13, "KELVYN CARDENGUE ALVES — REM 8D"], [14, "KENIA ITZEL VICENTE LUNA"], [15, "LANNA DANITAS AGUIAR RODRIGUES DE"], [16, "LENY ALVES CORREIA"], [17, "LÍVIA SANDYELLE RODRIGUES SILVA"], [18, "LUDYANNE GOMES VIRGINIO DE SOUSA"], [19, "LUIS GUILHERME CARDOSO SCHIMIDT"], [20, "MARIA EDUARDA DOURADO NUNES"], [21, "MARIA EDUARDA LIMA DE SOUZA"], [22, "MARIANY ALVES DA SILVA"], [23, "MIGUEL JOSE RIBEIRO SANTOS — TRANSF."], [24, "NICOLLY ALCANTARA EUSTAQUIO"], [25, "PEDRO HENRIQUE F SANTOS — TRANSF."], [26, "PEDRO HENRIQUE MOREIRA PAIXAO"], [27, "PEDRO LUCAS VAZ TEIXEIRA"], [28, "SAMUEL SOARES DA SILVA FERREIRA"], [29, "SARAH MARQUES DE OLIVEIRA MOTA"], [30, "SIRLANDO THAYSON SANTANA FROTA NEVES"], [31, "SOPHIE MEDEIROS CRUZ"], [32, "TAYLON DA SILVA"], [33, "THAYAN FERREIRA SALES"], [34, "VITORIA DUARTE DA SILVA"], [35, "WENDY JAZMIN SHAORY QUISPE LUNA"], [36, "YURY DYOGO ALENCAR SILVA"]], "9A": [[1, "ABNER LIMA ARAUJO"], [2, "ALYNE SELENA MAYTA MAMANI"], [3, "ANA BEATRIZ DE OLIVEIRA SILVA"], [4, "ANA CLARA NASCIMENTO SOUSA"], [5, "ANA CLARA NITHEORY JORGE"], [7, "DAVI TERTO GUIMARAES JUNQUEIRA"], [8, "DHUIA ALVES FIDELIS"], [9, "EDISON SANTANA RIBEIRO"], [10, "EZEQUIEL ALCANTARA ANTUNES"], [11, "FELIPE MATIAS WILK"], [12, "GIOVANNA PEREIRA DE LIMA"], [13, "GUSTAVO BATISTA DOS SANTOS"], [14, "GUSTAVO OLIVEIRA MONTALVÃO"], [15, "GUSTAVO RODRIGUES PEREIRA"], [16, "HADASSA CORRÊA BAIA"], [17, "HENZO GABRIEL MARQUES CAETANO"], [18, "IASMIN LUZIE VIEIRA DOS PASSOS"], [19, "JOAO LUCAS SANTANA MOREIRA"], [20, "JULIO CÉSAR MOREIRA DE SOUZA"], [21, "KATLEYA SANTOS SILVA"], [22, "KAYLAN ALVES BOTELHO"], [23, "LETICIA BARBOSA ROGERIO"], [24, "LEVI TERTO GUIMARÃES JUNQUEIRA"], [25, "LUIZ FELIPE RIBEIRO DA SILVA"], [26, "MARIA CLARA RODRIGUES CAETANO"], [27, "MARIA EDUARDA ANDRADE PINHEIRO"], [28, "MATHEUS HENRIQUE GONÇALVES DE OLIVEIRA"], [29, "MICKAELLY VICTÓRIA ALVES"], [30, "NICOLAS HENRIQUE GONÇALVES DE REZENDE"], [31, "NYCOLLAS LIMA NUNES DO NASCIMENTO"], [32, "PAULO ANTÔNIO DA SILVA NETO"], [33, "PEDRO HENRIQUE SANTOS RESENDE"], [34, "RAINER AGUSTIN AMARAL ACUNA"], [35, "RICARDO BACARIA DE ALMEIDA"], [36, "SAMUEL DA SILVA RIBEIRO"], [37, "SAMUEL GONÇALVES DOS SANTOS"], [38, "ARTHUR MARTINS DE ANDRADE"]], "9B": [[1, "ANA CLARA ALMEIDA SOARES"], [3, "ANA LUIZA DE OLIVEIRA SANTANA"], [4, "ANA VITÓRIA RIBEIRO DA SILVA"], [5, "CAIO YCARO CARVALHO OLIVEIRA"], [6, "DAVI CORREIA GONDIM"], [7, "DAVI EDUARDO SOUZA DA SILVA"], [8, "DAVI FERNANDO RODRIGUES LOPES"], [9, "DAVI LUCAS FERREIRA GOMES DE SOUZA"], [10, "EMILLY MONARA PIRES MARQUES"], [11, "HEITOR ALVES CAVALCANTE"], [12, "IORRANA ROSA DE LIMA SILVA"], [13, "JAIRO RIBEIRO SILVA"], [14, "JOÃO MATHEUS GUIMARÃES DA SILVA RAMOS"], [15, "JULLYA FERNANDA MENDONÇA DOS SANTOS"], [16, "KAROLAYNE RODRIGUES SILVESTRE"], [17, "KEVIN SANTOS ROSA"], [18, "LETÍCIA RODOVALHO COSTA"], [19, "LUCAS CHRISLEY SOARES MARTINS"], [20, "MARIA JÚLYA FERREIRA MARTINS"], [21, "MARIANE AGUIAR DA SILVA"], [22, "PIETRO FARIA LUCAS"], [23, "SAMUEL RIBEIRO BRANQUINHO"], [24, "SAULO MOISÉS DA SILVA ALVES"], [25, "SOPHIA CADETE DE PAULA MARTINS"], [26, "SOPHIA FERREIRA BORGES"], [27, "TIAGO FAGUNDES ROCHA"], [28, "YURI ALVES RODRIGUES"], [29, "LARA FERNANDA RODRIGUES COSTA"]]};
+let turmaAtual='8A';
+const TRANSFERIDOS={"6A": [25], "7A": [25, 29], "7B": [10, 17, 22, 23, 31, 32, 34], "8B": [23, 25], "8A": [], "9A": [], "9B": []};
+Object.keys(TRANSFERIDOS).forEach(t=>{
+  const nums=new Set(TRANSFERIDOS[t].map(Number));
+  if(TURMAS[t]) TURMAS[t]=TURMAS[t].filter(x=>!nums.has(Number(x[0])));
+});
+
+let roster8A=TURMAS[turmaAtual].map(x=>x[1]);
+const studentSearch=document.getElementById('studentSearch'),studentOptions=document.getElementById('studentOptions'),selectedStudent=document.getElementById('selectedStudent'),liveStudentList=document.getElementById('liveStudentList');
+function turmaLabel(k){return k[0]+'º '+k[1]}
+function roster(){return TURMAS[turmaAtual]}
+function storeKey(){return turmaAtual==='8A'?'leitor8A_resultados_etapa4b':'leitor'+turmaAtual+'_resultados_etapa4b'}
+function nameKey(){return turmaAtual==='8A'?'leitor8A_nomes_corrigidos_etapa7':'leitor'+turmaAtual+'_nomes_corrigidos_etapa7'}
+function normStudent(s){return(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();}
+function applyNames(){let m={};try{m=JSON.parse(localStorage.getItem(nameKey())||'{}')}catch(e){};TURMAS[turmaAtual]=roster().map(x=>[x[0],m[x[0]]||x[1]]);if(turmaAtual==='8A')roster8A=TURMAS['8A'].map(x=>x[1]);}
+function fillStudents(){applyNames();studentOptions.innerHTML=roster().map(x=>`<option value="${x[1]}">${x[0]}. ${x[1]}</option>`).join('');}
+function selectedEntry(){const v=normStudent(studentSearch.value);return roster().find(x=>normStudent(x[1])===v)||null}
+function showStudent(){const x=selectedEntry();selectedStudent.textContent=x?`${x[0]}. ${x[1]} — selecionado`:(studentSearch.value.trim()?'Continue digitando e escolha uma opção.':'Nenhum aluno selecionado.');}
+function refreshLiveStudentList(){
+  const q=normStudent(studentSearch.value);
+  liveStudentList.innerHTML='';
+  const hits=q ? roster().filter(x=>normStudent(x[1]).startsWith(q)) : roster().slice();
+  if(!hits.length){liveStudentList.style.display='none';return}
+  hits.forEach(x=>{
+    const row=document.createElement('div');
+    row.textContent=`${x[0]}. ${x[1]}`;
+    row.style.cssText='padding:13px 12px;border-bottom:1px solid #edf0f4;font-weight:650;cursor:pointer;-webkit-tap-highlight-color:transparent';
+    row.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      studentSearch.value=x[1];
+      showStudent();
+      liveStudentList.style.display='none';
+      studentSearch.blur();
+    });
+    liveStudentList.appendChild(row);
+  });
+  liveStudentList.style.display='block';
+}
+studentSearch.addEventListener('input',()=>{showStudent();refreshLiveStudentList()});
+studentSearch.addEventListener('focus',refreshLiveStudentList);
+studentSearch.addEventListener('click',refreshLiveStudentList);
+studentSearch.addEventListener('change',showStudent);
+</script>
+<script>const key8Visual=['C','A','D','B','B','C','D','A','B','C','C','A','C','D','D','D','A','C','B','B','D','D','A','A','B','A','D','B','D','D'];
+function calcScores(a){const parts=[{name:'Educação Física',start:0,end:5,total:5},{name:'Língua Inglesa',start:5,end:10,total:5},{name:'Língua Portuguesa',start:10,end:25,total:15},{name:'Arte (Visuais)',start:25,end:30,total:5}];const grid=document.getElementById('scoreGrid');grid.innerHTML=parts.map(p=>{let hits=0;for(let i=p.start;i<p.end;i++)if(a[i]===key8Visual[i])hits++;let grade=(hits/p.total*10).toFixed(1).replace('.',',');return `<div class="scorebox"><b>${p.name}</b><div>${hits}/${p.total} acertos</div><div class="note">Nota ${grade}</div></div>`}).join('');document.getElementById('scores').classList.remove('hidden');}
+const $=id=>document.getElementById(id),video=$('video'),canvas=$('canvas'),guide=$('guide'),statusEl=$('status');let stream=null;
+function status(t,c=''){statusEl.className='status '+c;statusEl.innerHTML=t}
+$('camera').onclick=async()=>{try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:2560}},audio:false});video.srcObject=stream;$('read').disabled=false;status('Câmera aberta. Deixe o cartão inteiro visível e toque em <b>Ler cartão</b>.','ok')}catch(e){status('Não consegui abrir a câmera. Permita o acesso ou use <b>Escolher foto</b>.','warn')}};
+$('photo').onclick=()=>$('file').click();$('file').onchange=async e=>{let f=e.target.files[0];if(!f)return;let img=await load(f);draw(img);analyze()};
+$('read').onclick=()=>{if(!video.videoWidth)return status('Aguarde a câmera carregar.','warn');canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0);showCanvas();analyze()};
+$('again').onclick=()=>{canvas.classList.add('hidden');video.classList.remove('hidden');guide.classList.remove('hidden');$('again').classList.add('hidden');$('result').classList.add('hidden');$('scores').classList.add('hidden');status('Faça uma nova leitura.','')};
+function load(f){return new Promise((res,rej)=>{let u=URL.createObjectURL(f),i=new Image;i.onload=()=>{URL.revokeObjectURL(u);res(i)};i.onerror=rej;i.src=u})}
+function draw(img){let max=1200,s=Math.min(1,max/img.width);canvas.width=Math.round(img.width*s);canvas.height=Math.round(img.height*s);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);showCanvas()}
+function showCanvas(){canvas.classList.remove('hidden');video.classList.add('hidden');guide.classList.add('hidden');$('again').classList.remove('hidden')}
+function analyze(){let r=detectMarks()||detectDarkMarks();if(!r){$('result').classList.add('hidden');return status('Ainda não localizei as 30 marcações. Mantenha o cartão inteiro na imagem.','warn')}render(r.answers);calcScores(r.answers);status(`Cartão reconhecido: <b>30/30 respostas</b>${r.uncertain.length?`. ${r.uncertain.length} para conferir.`:'.'}`,'ok')}
+function detectMarks(){const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,d=ctx.getImageData(0,0,w,h).data,N=w*h,mask=new Uint8Array(N);for(let p=0,i=0;p<N;p++,i+=4){let r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g),mn=Math.min(r,g,b),M=Math.max(r,g,b);if(b>45&&r<205&&g<205&&(b-mx)>6&&((b+r*.25)-g)>22&&(M-mn)>18)mask[p]=1}const seen=new Uint8Array(N), comps=[], stack=[];let minA=Math.max(10,Math.floor(N*.000012)),maxA=Math.floor(N*.008);for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){let p=y*w+x;if(!mask[p]||seen[p])continue;let n=0,sx=0,sy=0,minx=x,maxx=x,miny=y,maxy=y;seen[p]=1;stack.push(p);while(stack.length){let q=stack.pop(),qy=(q/w)|0,qx=q-qy*w;n++;sx+=qx;sy+=qy;if(qx<minx)minx=qx;if(qx>maxx)maxx=qx;if(qy<miny)miny=qy;if(qy>maxy)maxy=qy;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;let nx=qx+dx,ny=qy+dy;if(nx>0&&nx<w-1&&ny>0&&ny<h-1){let np=ny*w+nx;if(mask[np]&&!seen[np]){seen[np]=1;stack.push(np)}}}}let bw=maxx-minx+1,bh=maxy-miny+1;if(n>=minA&&n<=maxA&&bw>4&&bh>4&&bw<w*.08&&bh<h*.05)comps.push({x:sx/n,y:sy/n,area:n,bw,bh})}let pts=comps.filter(c=>c.y>h*.05&&c.y<h*.9&&c.x>w*.04&&c.x<w*.96);if(pts.length<28)return null;let xs=pts.map(p=>p.x).sort((a,b)=>a-b),bestGap=-1,cut=w/2;for(let i=0;i<xs.length-1;i++){let g=xs[i+1]-xs[i];if(xs[i]>w*.15&&xs[i+1]<w*.85&&g>bestGap){bestGap=g;cut=(xs[i]+xs[i+1])/2}}let L=selectRows(pts.filter(p=>p.x<cut),h),R=selectRows(pts.filter(p=>p.x>=cut),h);if(L.length!==15||R.length!==15)return null;let dl=decode(L,0),dr=decode(R,15);if(!dl||!dr)return null;return{answers:dl.a.concat(dr.a),uncertain:dl.u.concat(dr.u)}}
+function detectDarkMarks(){const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,d=ctx.getImageData(0,0,w,h).data,N=w*h,mask=new Uint8Array(N);for(let p=0,i=0;p<N;p++,i+=4){const lum=.299*d[i]+.587*d[i+1]+.114*d[i+2];if(lum<90)mask[p]=1;}const seen=new Uint8Array(N),comps=[],stack=[];const minA=Math.max(35,Math.floor(N*.00010)),maxA=Math.max(500,Math.floor(N*.0025));for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const p=y*w+x;if(!mask[p]||seen[p])continue;let n=0,sx=0,sy=0,minx=x,maxx=x,miny=y,maxy=y;seen[p]=1;stack.push(p);while(stack.length){const q=stack.pop(),qy=(q/w)|0,qx=q-qy*w;n++;sx+=qx;sy+=qy;if(qx<minx)minx=qx;if(qx>maxx)maxx=qx;if(qy<miny)miny=qy;if(qy>maxy)maxy=qy;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=qx+dx,ny=qy+dy;if(nx>0&&nx<w-1&&ny>0&&ny<h-1){const np=ny*w+nx;if(mask[np]&&!seen[np]){seen[np]=1;stack.push(np)}}}}const bw=maxx-minx+1,bh=maxy-miny+1,ratio=bw/bh;if(n>=minA&&n<=maxA&&bw>6&&bh>6&&bw<w*.07&&bh<h*.055&&ratio>.5&&ratio<1.8)comps.push({x:sx/n,y:sy/n,area:n,bw,bh});}let pts=comps.filter(c=>c.y>h*.12&&c.y<h*.88&&c.x>w*.18&&c.x<w*.88);if(pts.length<28)return null;const xs=pts.map(p=>p.x).sort((a,b)=>a-b);let bestGap=-1,cut=w/2;for(let i=0;i<xs.length-1;i++){const g=xs[i+1]-xs[i];if(xs[i]>w*.25&&xs[i+1]<w*.75&&g>bestGap){bestGap=g;cut=(xs[i]+xs[i+1])/2}}const L=selectRows(pts.filter(p=>p.x<cut),h),R=selectRows(pts.filter(p=>p.x>=cut),h);if(L.length!==15||R.length!==15)return null;const dl=decode(L,0),dr=decode(R,15);if(!dl||!dr)return null;return{answers:dl.a.concat(dr.a),uncertain:dl.u.concat(dr.u)};}
+function selectRows(side,h){side=side.slice().sort((a,b)=>a.y-b.y);let gs=[];for(let p of side){let g=gs.find(z=>Math.abs(z.y-p.y)<h*.012);if(!g){g={y:p.y,pts:[]};gs.push(g)}g.pts.push(p);g.y=g.pts.reduce((s,q)=>s+q.y,0)/g.pts.length}gs.sort((a,b)=>a.y-b.y);if(gs.length<15)return[];let best=[],score=1e99;for(let i=0;i<=gs.length-15;i++){let a=gs.slice(i,i+15),ds=[];for(let j=1;j<15;j++)ds.push(a[j].y-a[j-1].y);let m=ds.reduce((s,v)=>s+v,0)/14,sc=ds.reduce((s,v)=>s+(v-m)**2,0)/14;if(m>h*.012&&sc<score){score=sc;best=a}}return best}
+function decode(groups,off){let marks=groups.map(g=>g.pts.sort((a,b)=>b.area-a.area)[0]),xs=marks.map(p=>p.x).sort((a,b)=>a-b);let lo=xs[0],hi=xs[xs.length-1],span=hi-lo;if(span<10)return null;let step=span/3,base=lo,best={e:1e99,b:base,s:step};for(let s=step*.72;s<=step*1.28;s+=step*.02){for(let b=lo-s*.25;b<=lo+s*.25;b+=Math.max(1,s*.03)){let e=0;for(let x of xs){let k=Math.max(0,Math.min(3,Math.round((x-b)/s)));e+=(x-(b+k*s))**2}if(e<best.e)best={e,b,s}}}base=best.b;step=best.s;let a=[],u=[],letters='ABCD';marks.forEach((p,i)=>{let k=Math.max(0,Math.min(3,Math.round((p.x-base)/step))),err=Math.abs(p.x-(base+k*step));a.push(letters[k]);if(err>step*.38)u.push(off+i+1)});return{a,u}}
+function render(a){$('answers').innerHTML=a.map((v,i)=>`<div class="ans">${i+1}<br><b>${v}</b></div>`).join('');$('result').classList.remove('hidden')}</script>
+<script>
+function getRows(){try{return JSON.parse(localStorage.getItem(storeKey())||'[]')}catch(e){return[]}}
+function setRows(r){localStorage.setItem(storeKey(),JSON.stringify(r))}
+function parseScores(){const boxes=[...document.querySelectorAll('#scoreGrid .scorebox')];if(boxes.length!==4||document.getElementById('scores').classList.contains('hidden'))return null;return boxes.map(b=>{const t=b.innerText,h=t.match(/(\d+)\/(\d+) acertos/),n=t.match(/Nota\s+([0-9]+,[0-9]+)/);return h&&n?{acertos:+h[1],total:+h[2],nota:n[1]}:null})}
+function updateProgress(){document.getElementById('classProgress').textContent=`${getRows().length} de ${roster().length} corrigidos`;if(window.renderClassResults)window.renderClassResults()}
+document.getElementById('saveStudent').onclick=function(){const x=selectedEntry(),msg=document.getElementById('saveMsg');if(!x){msg.className='status warn';msg.textContent='Selecione um aluno da lista antes de salvar.';return}const sc=parseScores();if(!sc){msg.className='status warn';msg.textContent='Primeiro faça uma leitura 30/30 e confira as quatro notas.';return}let rows=getRows(),pos=rows.findIndex(r=>r.no===x[0]);if(pos>=0&&!confirm('Este aluno já possui resultado salvo. Deseja substituir?'))return;const row={no:x[0],aluno:x[1],ef:sc[0],ingles:sc[1],portugues:sc[2],arte:sc[3]};if(pos>=0)rows[pos]=row;else rows.push(row);rows.sort((a,b)=>a.no-b.no);setRows(rows);updateProgress();msg.className='status ok';msg.textContent=`Resultado salvo: ${x[0]}. ${x[1]}`;const next=roster().find(y=>y[0]>x[0]&&!rows.some(r=>r.no===y[0]))||roster().find(y=>!rows.some(r=>r.no===y[0]));if(next){studentSearch.value=next[1];showStudent()}else msg.textContent+=' — turma concluída.';};
+document.getElementById('deleteStudent').onclick=function(){const x=selectedEntry(),msg=document.getElementById('saveMsg');if(!x){msg.className='status warn';msg.textContent='Selecione o aluno cujo resultado deseja excluir.';return}let rows=getRows(),pos=rows.findIndex(r=>r.no===x[0]);if(pos<0){msg.className='status warn';msg.textContent='Este aluno não possui resultado salvo.';return}if(!confirm(`Excluir o resultado salvo de ${x[0]}. ${x[1]}?`))return;rows.splice(pos,1);setRows(rows);updateProgress();msg.className='status ok';msg.textContent=`Resultado excluído: ${x[0]}. ${x[1]}`;};
+</script>
+
+<section id="addStudentPanel" style="margin:18px auto;padding:18px;border:1px solid #d9dee8;border-radius:16px;background:#fff;max-width:736px">
+  <button id="toggleAddStudent" type="button" class="secondary" style="width:100%;font-size:16px">+ Adicionar aluno</button>
+  <div id="addStudentBody" style="display:none;margin-top:14px">
+    <div class="muted" style="margin-bottom:10px">O aluno será acrescentado à turma selecionada.</div>
+    <label for="addStudentNo"><b>Nº da chamada</b></label>
+    <input id="addStudentNo" type="number" min="1" inputmode="numeric" placeholder="Ex.: 9"
+      style="box-sizing:border-box;width:100%;margin:6px 0 10px;padding:12px;border:1px solid #cfd6e2;border-radius:10px;font-size:16px">
+    <label for="addStudentName"><b>Nome do aluno</b></label>
+    <input id="addStudentName" type="text" autocomplete="off" placeholder="Digite o nome"
+      style="box-sizing:border-box;width:100%;margin-top:6px;padding:12px;border:1px solid #cfd6e2;border-radius:10px;font-size:16px;text-transform:uppercase">
+    <button id="saveNewStudent" type="button" class="primary" style="width:100%;margin-top:10px">Adicionar aluno</button>
+    <div id="addStudentMsg" class="status" style="margin-top:10px">Nenhum aluno acrescentado.</div>
+  </div>
+</section>
+
+<section id="nameEditorPanel" style="margin:18px auto;padding:18px;border:1px solid #d9dee8;border-radius:16px;background:#fff;max-width:736px"><button id="toggleNameEditor" type="button" class="secondary" style="width:100%;font-size:16px">Corrigir nome de aluno</button><div id="nameEditorBody" style="display:none;margin-top:14px"><div id="nameEditorCurrent" style="padding:11px;border-radius:10px;background:#f5f7fa;margin-bottom:10px">Selecione o aluno na lista acima.</div><input id="nameEditorInput" type="text" placeholder="Digite o nome correto" style="width:100%;padding:12px;border:1px solid #cfd6e2;border-radius:10px;font-size:16px;text-transform:uppercase"><button id="saveEditedName" class="primary" style="width:100%;margin-top:10px">Salvar nome corrigido</button><div id="nameEditorMsg" style="margin-top:9px;font-weight:650"></div></div></section>
+<section class="card" id="classResultsPanel" style="max-width:736px;margin:12px auto"><button id="toggleClassResults" type="button" class="secondary" style="width:100%;font-size:16px">Resultados da turma</button><div id="classResultsBody" style="display:none;margin-top:14px"><b id="resultsTitle"></b><div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;min-width:900px;font-size:12px"><thead><tr><th>Nº</th><th>Aluno</th><th>EF Pontos</th><th>EF Nota</th><th>Ing. Pontos</th><th>Ing. Nota</th><th>Port. Pontos</th><th>Port. Nota</th><th>Arte Pontos</th><th>Arte Nota</th></tr></thead><tbody id="classResultsRows"></tbody></table></div></div></section>
+<section class="card" style="max-width:736px;margin:12px auto"><b>Cópia de segurança da turma</b><button id="exportResults" class="primary" style="width:100%;margin-top:10px">Exportar resultados</button><div id="exportMsg" class="status">Nenhuma exportação realizada ainda.</div></section>
+<script>
+const bodyR=document.getElementById('classResultsBody'),tbody=document.getElementById('classResultsRows');
+function td(v,a='center'){return `<td style="padding:8px;border:1px solid #dbe2ec;text-align:${a}">${v??'—'}</td>`}
+window.renderClassResults=function(){const saved=getRows();document.getElementById('resultsTitle').textContent='Resultados da Turma — '+turmaLabel(turmaAtual);tbody.innerHTML=roster().map(x=>{const r=saved.find(z=>z.no===x[0]),v=k=>r&&r[k]?r[k]:null,p=k=>v(k)?`${v(k).acertos}/${v(k).total}`:'—',n=k=>v(k)?v(k).nota:'—';return `<tr>${td(x[0])}${td(x[1],'left')}${td(p('ef'))}${td(n('ef'))}${td(p('ingles'))}${td(n('ingles'))}${td(p('portugues'))}${td(n('portugues'))}${td(p('arte'))}${td(n('arte'))}</tr>`}).join('')};
+document.getElementById('toggleClassResults').onclick=()=>{bodyR.style.display=bodyR.style.display==='none'?'block':'none';if(bodyR.style.display==='block')renderClassResults()};
+document.getElementById('toggleNameEditor').onclick=()=>{const b=document.getElementById('nameEditorBody');b.style.display=b.style.display==='none'?'block':'none';const x=selectedEntry();document.getElementById('nameEditorCurrent').textContent=x?`${x[0]}. ${x[1]}`:'Selecione o aluno na lista acima.';document.getElementById('nameEditorInput').value=x?x[1]:''};
+document.getElementById('saveEditedName').onclick=()=>{const x=selectedEntry(),msg=document.getElementById('nameEditorMsg'),novo=document.getElementById('nameEditorInput').value.trim().replace(/\s+/g,' ').toUpperCase();if(!x||!novo){msg.textContent='Selecione o aluno e digite o nome correto.';return}let m={};try{m=JSON.parse(localStorage.getItem(nameKey())||'{}')}catch(e){}m[x[0]]=novo;localStorage.setItem(nameKey(),JSON.stringify(m));const i=roster().findIndex(y=>y[0]===x[0]);TURMAS[turmaAtual][i][1]=novo;if(turmaAtual==='8A')roster8A=TURMAS['8A'].map(y=>y[1]);studentSearch.value=novo;fillStudents();showStudent();msg.textContent='Nome corrigido.';renderClassResults();};
+document.getElementById('exportResults').onclick=()=>{const rows=getRows().slice().sort((a,b)=>a.no-b.no),msg=document.getElementById('exportMsg');if(!rows.length){msg.textContent='Não há resultados salvos para exportar.';return}const cell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const head=['Nº','Aluno','Educação Física - Pontos','Educação Física - Nota','Língua Inglesa - Pontos','Língua Inglesa - Nota','Língua Portuguesa - Pontos','Língua Portuguesa - Nota','Arte - Pontos','Arte - Nota'];const out=[head.map(cell).join(';')];rows.forEach(r=>out.push([r.no,r.aluno,r.ef?r.ef.acertos+'/'+r.ef.total:'',r.ef?.nota||'',r.ingles?r.ingles.acertos+'/'+r.ingles.total:'',r.ingles?.nota||'',r.portugues?r.portugues.acertos+'/'+r.portugues.total:'',r.portugues?.nota||'',r.arte?r.arte.acertos+'/'+r.arte.total:'',r.arte?.nota||''].map(cell).join(';')));const blob=new Blob(['\uFEFF'+out.join('\r\n')],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='Resultados_'+turmaAtual+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);msg.textContent=`Cópia criada com ${rows.length} alunos.`;};
+function switchTurma(){
+  turmaAtual=document.getElementById('className').value;
+  roster8A=TURMAS[turmaAtual].map(x=>x[1]);
+  studentSearch.value='';
+  fillStudents();
+  showStudent();
+  document.getElementById('studentLabel').textContent='Aluno';
+  studentSearch.placeholder='Digite a primeira letra do nome — '+turmaLabel(turmaAtual);
+  document.getElementById('scoreTitle').textContent='Resultado pelo gabarito — '+turmaLabel(turmaAtual)+' • Arte Visuais';
+  document.getElementById('saveMsg').textContent='Nenhum resultado salvo nesta etapa.';
+  updateProgress();
+  renderClassResults();
+  // Ao trocar a turma, mostra imediatamente a chamada daquela turma.
+  refreshLiveStudentList();
+  setTimeout(()=>studentSearch.focus(),50);
+}
+window.__switchTurmaUI=switchTurma;
+document.getElementById('className').addEventListener('change',switchTurma);
+switchTurma();
+</script>
+<script>
+(function(){
+  const EXTRA_PREFIX='leitor_alunos_adicionados_';
+
+  function extraKey(turma){ return EXTRA_PREFIX + turma; }
+
+  function loadExtras(turma){
+    try { return JSON.parse(localStorage.getItem(extraKey(turma)) || '[]'); }
+    catch(e){ return []; }
+  }
+
+  function saveExtras(turma, rows){
+    localStorage.setItem(extraKey(turma), JSON.stringify(rows));
+  }
+
+  function applyExtras(turma){
+    const extras=loadExtras(turma);
+    extras.forEach(x=>{
+      const no=Number(x[0]), nome=String(x[1]||'').trim().toUpperCase();
+      if(!no || !nome) return;
+      const pos=TURMAS[turma].findIndex(y=>Number(y[0])===no);
+      if(pos<0) TURMAS[turma].push([no,nome]);
+    });
+    TURMAS[turma].sort((a,b)=>Number(a[0])-Number(b[0]));
+  }
+
+  Object.keys(TURMAS).forEach(applyExtras);
+
+  const toggle=document.getElementById('toggleAddStudent');
+  const body=document.getElementById('addStudentBody');
+  const noInput=document.getElementById('addStudentNo');
+  const nameInput=document.getElementById('addStudentName');
+  const save=document.getElementById('saveNewStudent');
+  const msg=document.getElementById('addStudentMsg');
+
+  nameInput.addEventListener('input', function(){
+    const ini=this.selectionStart, fim=this.selectionEnd;
+    this.value=this.value.toUpperCase();
+    try{ this.setSelectionRange(ini,fim); }catch(e){}
+  });
+
+  toggle.addEventListener('click', function(){
+    body.style.display=body.style.display==='none'?'block':'none';
+    if(body.style.display==='block') noInput.focus();
+  });
+
+  save.addEventListener('click', function(){
+    const turma=turmaAtual;
+    const no=Number(noInput.value);
+    const nome=nameInput.value.trim().replace(/\s+/g,' ').toUpperCase();
+
+    if(!Number.isInteger(no) || no<1){
+      msg.className='status warn';
+      msg.textContent='Digite o número da chamada.';
+      return;
+    }
+    if(!nome){
+      msg.className='status warn';
+      msg.textContent='Digite o nome do aluno.';
+      return;
+    }
+    if(TURMAS[turma].some(x=>Number(x[0])===no)){
+      msg.className='status warn';
+      msg.textContent='Esse número já existe nesta turma.';
+      return;
+    }
+    if(TURMAS[turma].some(x=>normStudent(x[1])===normStudent(nome))){
+      msg.className='status warn';
+      msg.textContent='Esse aluno já aparece nesta turma.';
+      return;
+    }
+
+    TURMAS[turma].push([no,nome]);
+    TURMAS[turma].sort((a,b)=>Number(a[0])-Number(b[0]));
+
+    const extras=loadExtras(turma);
+    extras.push([no,nome]);
+    extras.sort((a,b)=>Number(a[0])-Number(b[0]));
+    saveExtras(turma,extras);
+
+    if(turma==='8A') roster8A=TURMAS['8A'].map(x=>x[1]);
+    studentSearch.value=nome;
+    fillStudents();
+    showStudent();
+    if(typeof refreshLiveStudentList==='function') refreshLiveStudentList();
+    if(typeof updateProgress==='function') updateProgress();
+    if(typeof renderClassResults==='function') renderClassResults();
+
+    noInput.value='';
+    nameInput.value='';
+    msg.className='status ok';
+    msg.textContent=`Aluno acrescentado: ${no}. ${nome}`;
+  });
+})();
+</script>
+
+</body></html>
